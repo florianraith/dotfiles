@@ -94,3 +94,5 @@ export GOOGLE_APPLICATION_CREDENTIALS='/Users/florian/.config/gcloud/application
 
 # Set up fzf key bindings and fuzzy completion
 eval "$(fzf --zsh)"
+
+if [ -f "$HOME/.secrets.zsh" ]; then source "$HOME/.secrets.zsh"; fi
