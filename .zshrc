@@ -64,7 +64,7 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
 [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
 
-alias ls='EXA_ICON_SPACING=2 exa --icons --group-directories-first'
+alias ls='eza --icons --group-directories-first'
 alias ll='ls -l'
 alias la='ll -a'
 alias llm='ll --sort modified'
