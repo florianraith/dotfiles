@@ -96,3 +96,6 @@ export GOOGLE_APPLICATION_CREDENTIALS='/Users/florian/.config/gcloud/application
 eval "$(fzf --zsh)"
 
 if [ -f "$HOME/.secrets.zsh" ]; then source "$HOME/.secrets.zsh"; fi
+
+# add unversioned python symlinks to PATH
+export PATH="$(brew --prefix python)/libexec/bin:$PATH"
