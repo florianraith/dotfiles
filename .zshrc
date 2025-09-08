@@ -42,6 +42,8 @@ if [[ $- == *i* ]]; then
       ~/Work 
       ~/Work/zewotherm 
       ~/Work/projects 
+      ~/Work/games 
+      ~/Work/lib 
       ~/Work/uni 
       ~/Work/etc 
       ~/.config 
