@@ -41,6 +41,7 @@ if [[ $- == *i* ]]; then
       ~/Documents
       ~/Work 
       ~/Work/zewotherm 
+      ~/Work/pluto 
       ~/Work/projects 
       ~/Work/games 
       ~/Work/lib 
@@ -75,6 +76,7 @@ alias lm='l --sort modified'
 alias lam='la --sort modified'
 alias vim=nvim
 alias sail='[ -f sail ] && sh sail || sh vendor/bin/sail'
+alias sial=sail
 alias gs='git status'
 alias gla='git log --oneline --graph --decorate --all --color'
 alias gpo='git push origin'
