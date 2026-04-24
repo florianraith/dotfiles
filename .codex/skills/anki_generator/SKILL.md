@@ -9,17 +9,13 @@ description: Generate high-quality Anki flashcards from presentation.pdf using a
 
 This skill generates high-quality Anki flashcards from a presentation (`presentation.pdf`) using a structured multi-phase approach. The output is written to `anki.txt`.
 
----
-
 ## Inputs
 
 - `./presentation.pdf`
 
----
-
 ## Phase 1 — Knowledge Extraction (INTERNAL ONLY)
 
-Read the presentation carefully and extract all individual knowledge units.
+Carefully read the slides and extract all individual pieces of knowledge contained in them.
 
 This includes:
 
@@ -31,38 +27,36 @@ This includes:
 - structural explanations
 - mechanisms
 - relationships between concepts
-- central ideas or principles
+- central ideas or principles behind concepts
 
 ### Rules
 
-- Break content into the smallest independent units possible.
-- Treat examples as supporting context, not primary knowledge.
-- Do NOT output anything from this phase.
+- Break the content into the smallest possible independent knowledge units.
+- Examples contained in the slides should be treated as supporting information that clarifies concepts, not as primary facts to memorize.
+- Do NOT output this phase. It is only used internally.
 
----
+## Phase 2 - Flashcard Generation
 
-## Phase 2 — Flashcard Generation
-
-Convert each knowledge unit into an Anki flashcard.
+Convert each extracted knowledge unit into an Anki flashcard.
 
 ### Goal
 
-Efficient memorization of core concepts.
+Create flashcards that enable efficient memorization of the key concepts from the slides.
 
----
+### Guidelines
 
-### Core Rules
-
-- Each card = exactly **one atomic fact**
-- Prefer **many small cards** over large ones
-- Split complex ideas into multiple cards
-- Cards must be **independent and self-contained**
-
----
+- Each card must contain exactly one atomic fact or concept.
+- Cards must be concise and optimized for recall.
+- Prefer creating many small cards instead of fewer large cards.
+- If a slide contains multiple facts, create multiple cards.
+- If information is complex or long, split it into several smaller cards.
+- Each card must be understandable independently and must not rely on knowledge of the slides.
+- Prefer questions on the front and short answers on the back.
 
 ### Preferred Question Types
 
-Use active recall:
+Prefer Active Recall Questions
+Prefer questions such as:
 
 - What is ...?
 - Which ...?
@@ -70,143 +64,134 @@ Use active recall:
 - What does ... mean?
 - What is the difference between ...?
 
----
+### Preferred Knowledge Type (VERY IMPORTANT)
 
-### Prioritization (VERY IMPORTANT)
+When creating cards, prioritize testing the underlying idea behind a concept.
 
-Focus on:
+Prefer cards about:
 
-1. Core idea of a concept  
-2. Definitions  
-3. Mechanisms (how something works)  
-4. Differences / contrasts  
-5. Relationships between concepts  
+1. The main idea of a concept
+2. Definitions of terms
+3. Mechanisms (how something works)
+4. Contrasts or differences between concepts
+5. Structural relationships between concepts
 
 Avoid:
 
 - trivial descriptive details
 - non-essential facts
 
----
-
 ### Strict Constraints
 
 #### No Acronym Introduction
-- Do not introduce new acronyms
-- If used, write full term first
+
+- Do not introduce acronyms that are not used in the slides.
+- If an acronym is used, write the full term first and optionally place the acronym in parentheses afterward.
 
 #### No Example-Based Questions
-- Do NOT ask for examples
+
+- Do NOT create questions that ask for specific examples.
 
 #### No Slide References
-- No phrasing like:
-  - "according to the slide"
-  - "shown on the slide"
 
----
+- Questions must not refer to slides or slide content directly.
+- Avoid phrasing such as:
+  - "... according to the slide?"
+  - "... mentioned on the slide?"
+  - "... highlighted on the slide?"
+  - "... named on the slide?"
+  - "... shown on the slide?"
+- Questions must be answerable without knowing the lecture slides.
 
-### Quality Checklist (MANDATORY)
+### Card Quality Checklist (MANDATORY)
 
 Each card must satisfy:
 
-1. Atomic (single fact)
-2. Clear and unambiguous
-3. Minimal answer length
-4. Active recall focused
-5. No redundancy
-6. Independent
-7. No long answers (split if needed)
-
----
+1. Atomicity
+   The card tests exactly one piece of knowledge.
+2. Clarity
+   The question must be unambiguous and understandable without additional context.
+3. Minimal Answer
+   The back should contain the shortest possible correct answer.
+4. Active Recall
+   Prefer recall-based questions rather than recognition.
+5. No Redundancy
+   Avoid repeating the same fact unless testing a different aspect.
+6. Independent Cards
+   Each card must make sense without relying on other cards.
+7. Avoid Long Text
+   If an answer would be long, split it into multiple cards.
 
 ### Slide Number Requirement
 
-- Use slide number printed on slide (NOT PDF page)
-- If spanning slides → use range (e.g. page 12-13)
-
----
+- Every card must include the slide number it was derived from.
+- The slide number must be the number shown on the slide itself, typically located at the bottom-left corner of the slide.
+- Do NOT use the PDF page number.
+- If the slide numbering starts later due to title or intro slides, use the numbering printed on the slide.
+- If a card is based on information spanning multiple slides, specify a range (example: page 12-13).
 
 ### Output Format (STRICT)
 
-- Plain text only
-- No markdown
-- No explanations
-- No additional text
+- Output only the cards. Do not include explanations or additional text.
+- The output must be plain raw text suitable for a .txt file.
+- Do not use markdown formatting.
+- Use only normal characters commonly used in programming such as ', ", -, :, (, ), etc.
 
-Format exactly:
+Required Output Structure:
 
+```
 1. Card (page x)
-Front:
-<Question>
-Back:
-<Answer>
 
+Front: 
+<Question>
+Back: 
+<Answer>
 
 2. Card (page y-z)
-Front:
+
+Front: 
 <Question>
-Back:
+Back: 
 <Answer>
+```
 
----
+Continue numbering sequentially.
 
-### Output Target
+### Output 
 
-Write output to:
+Write the cards into a file named "anki.txt".
 
-`./anki.txt`
+## Phase 3 - Add Contextual Examples
 
----
-
-## Phase 3 — Add Contextual Examples
-
-Read `anki.txt` and enrich cards with examples.
-
----
+Read the previously generated cards from "anki.txt" and enrich cards with examples.
 
 ### Process
 
 For each card:
 
-- Identify relevant examples from slides
-- Select up to 2 useful examples
-
----
+- Identify examples from the slides that illustrate the concept tested by the card.
+- Choose at most two examples that provide the most helpful context for understanding the concept.
 
 ### Rules
 
-- DO NOT modify question
-- DO NOT modify main answer
-- Append examples to answer
-
----
+- Do NOT modify the question.
+- Do NOT modify the main answer text.
+- Append the examples after the answer on a new line.
+- The line must start with "Example: ".
+- Include at most two examples.
+- If no suitable examples exist, leave the card unchanged.
 
 ### Format
 
-Add directly after answer:
-
 ```
+Front: 
+<Question>
+Back: 
+<Answer>
+
 Example: <Example 1>, <Example 2>
 ```
 
-- Max 2 examples
-- If none → leave unchanged
+### Output
 
----
-
-### Final Output
-
-Rewrite:
-
-`./anki.txt`
-
-with appended examples.
-
----
-
-## Constraints Across All Phases
-
-- No hallucinated content
-- No adding new knowledge not present in slides
-- No restructuring outside defined format
-- Strict adherence to output format
+Rewrite the file "anki.txt" so that each card includes the contextual examples appended to the answer when applicable.
