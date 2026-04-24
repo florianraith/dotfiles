@@ -98,7 +98,7 @@ function commit() {
 
      # Get diff with size limit, include stat summary for context
       diff_input=$(echo "=== Summary ===" && "${git_cmd[@]}" diff --cached --stat && echo -e "\n=== Diff (truncated if large) ===" && "${git_cmd[@]}" diff --cached | head -c 50000)
-      commitMessage=$(echo "$diff_input" | claude -p "Write a single-line commit message for this diff. Output ONLY the message, no quotes, no explanation, no markdown.")
+      commitMessage=$(echo "$diff_input" | claude -p "Write a single-line short commit message for this diff. Output ONLY the message, no quotes, no explanation, no markdown.")
 
      # Stop spinner and clear line
      trap - INT
@@ -129,6 +129,7 @@ alias gs='git status'
 alias gla='git log --oneline --graph --decorate --all --color'
 alias gpo='git push origin'
 alias dotfiles="/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME"
+alias mov2gif='f() { ffmpeg -i "$1" -vf "fps=15,scale=1080:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" "${1%.*}.gif" }; f'
 
 ssh-add --apple-use-keychain ~/.ssh/id_rsa 2>/dev/null
 
