@@ -41,7 +41,8 @@ The final cards should be:
 - Conceptually important.
 - Atomic.
 - Non-redundant.
-- Clear without referencing slide numbers.
+- Clear without depending on slide numbers for understanding.
+- Preserve existing source references in card headers, such as `(page 9)`.
 - Focused on definitions, mechanisms, contrasts, formulas, assumptions, and typical exam-style questions.
 
 ## High-Level Workflow
@@ -128,6 +129,8 @@ Merge cards only when the result remains atomic enough for Anki.
 
 Do not merge unrelated concepts into one large card.
 
+When merging cards, preserve source references from the original card headers. If all merged cards come from the same page, keep that page reference. If merged cards come from multiple pages, use a compact combined reference such as `(pages 10-11)` or `(pages 10, 14)`.
+
 ## Scoring Heuristic
 
 Use the following internal scoring model when deciding what to keep.
@@ -183,6 +186,7 @@ Each final card should:
 - Ask exactly one main thing.
 - Be understandable without seeing the slide.
 - Avoid phrases like “according to the slide,” “in this presentation,” or “as shown above.”
+- Keep the existing page reference in the card header; do not remove it just because the card text should be self-contained.
 - Use precise terminology.
 - Prefer concise answers.
 - Include short examples only when they materially improve understanding or exam preparation.
@@ -222,18 +226,20 @@ Back:
 Overwrite or create the final `./anki.txt` using this exact style unless the existing file uses a clearly different user-required format:
 
 ```text
-1. Card
+1. Card (page 9)
 Front: 
 ...
 Back: 
 ...
 
-2. Card
+2. Card (pages 10-11)
 Front: 
 ...
 Back: 
 ...
 ```
+
+Preserve page/source references that already exist in `./anki.txt`. For rewritten cards, keep the original reference. For merged cards, combine references as needed.
 
 Do not use Markdown bullets inside the final file unless they are needed inside an answer.
 
