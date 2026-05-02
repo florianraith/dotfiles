@@ -1,0 +1,4 @@
+interface:
+  display_name: "Slide Tester"
+  short_description: "Quiz against presentation.pdf and identify knowledge gaps."
+  default_prompt: "Use $slide-tester to quiz me on presentation.pdf and identify knowledge gaps."
