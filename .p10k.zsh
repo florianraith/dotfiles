@@ -46,7 +46,8 @@
       # Check for uncommitted changes in the dotfiles repository
       if [[ -n $(/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME status --porcelain 2>/dev/null) ]]; then
         # Display the segment with custom styling
-        p10k segment -f yellow -i '⚡️' -t 'Dotfiles Changes'
+        # p10k segment -f yellow -i '⚡️' -t 'Dotfiles Changes' # dark mode 
+        p10k segment -f black -b 255 -i '⚡️' -t 'Dotfiles Changes' # light mode
       fi
     fi
   }
