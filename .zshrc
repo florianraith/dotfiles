@@ -110,6 +110,44 @@ function commit() {
   "${git_cmd[@]}" commit -a -m "$commitMessage"
 }
 
+function push() {
+  local owner="florianraith"
+  local repo_name
+  local branch
+  local is_new_repo=false
+
+  repo_name=$(basename "$PWD")
+
+  # If this is not a git repo yet, initialize it and create initial commit.
+  if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    git init -b main
+    git add .
+    git commit -m "Initial commit"
+    is_new_repo=true
+  else
+    git add .
+
+    # Only run commit if there are staged changes.
+    if ! git diff --cached --quiet; then
+      commit
+    fi
+  fi
+
+  # Create GitHub repo + origin if origin does not exist yet.
+  if ! git remote get-url origin >/dev/null 2>&1; then
+    gh repo create "$owner/$repo_name" --private --source=. --remote=origin
+  fi
+
+  branch=$(git branch --show-current)
+
+  if [[ -z "$branch" ]]; then
+    echo "Could not determine current branch. Are you in detached HEAD?"
+    return 1
+  fi
+
+  git push -u origin "$branch"
+}
+
 export NVM_DIR="$HOME/.nvm"
 [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
 [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
