@@ -94,9 +94,10 @@ function commit() {
      }
      trap cleanup INT
 
-     # Get diff with size limit, include stat summary for context
-      diff_input=$(echo "=== Summary ===" && "${git_cmd[@]}" diff --cached --stat && echo -e "\n=== Diff (truncated if large) ===" && "${git_cmd[@]}" diff --cached | head -c 50000)
-      commitMessage=$(echo "$diff_input" | claude -p "Write a single-line short commit message for this diff. Output ONLY the message, no quotes, no explanation, no markdown.")
+      # Get diff with size limit, include stat summary for context
+       recent_messages=$("${git_cmd[@]}" log -5 --pretty=format:%s 2>/dev/null)
+       diff_input=$(printf "=== Latest 5 commit messages (from: git log -5 --pretty=format:%%s) ===\n%s\n\n=== Summary ===\n" "$recent_messages" && "${git_cmd[@]}" diff --cached --stat && printf "\n=== Diff (truncated if large) ===\n" && "${git_cmd[@]}" diff --cached | head -c 50000)
+       commitMessage=$(echo "$diff_input" | claude -p "Use the latest 5 commit messages included below as examples and match the new commit message to the same format/style. Write a single-line short commit message for this diff. Output ONLY the message, no quotes, no explanation, no markdown.")
 
      # Stop spinner and clear line
      trap - INT
