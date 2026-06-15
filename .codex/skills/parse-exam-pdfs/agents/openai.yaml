@@ -1,0 +1,4 @@
+interface:
+  display_name: "Parse Exam PDFs"
+  short_description: "Convert exam and solution PDFs into Markdown"
+  default_prompt: "Use $parse-exam-pdfs to convert the exam and solution PDFs into structured Markdown files."

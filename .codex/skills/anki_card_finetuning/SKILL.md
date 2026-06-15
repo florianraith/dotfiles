@@ -1,287 +1,272 @@
 ---
-name: anki_card_finetuning
-description: Refine an overgenerated anki.txt file by reducing it to around 60–70 high-value Anki cards, using presentation.pdf as source context and older exams in ./Exam to prioritize exam-relevant cards.
+name: anki-card-finetuning
+description: Refine an overgenerated anki.txt file into roughly 60-70 high-value Anki cards, using presentation.pdf as source context and Exam/Parsed/index.md plus its linked exam Markdown files to prioritize exam-relevant concepts.
 ---
 
 # Anki Card Finetuning
 
 ## Purpose
 
-Use this skill to reduce an over-generated set of Anki flashcards into a compact, high-value exam-preparation deck.
+Use this skill when `anki.txt` contains too many generated cards and needs to be reduced to a compact, exam-focused set.
 
-The input deck was generated from a presentation and may contain hundreds of cards per slide. Your job is to select, merge, rewrite, and prioritize the most useful cards, aiming for approximately 60–70 final cards total unless the user specifies a different target.
-
-The skill must preserve coverage of the presentation while strongly prioritizing concepts that appear in older exams.
+The skill must preserve broad coverage of the course material while prioritizing concepts that recur in the parsed exam corpus. The presentation remains the factual source of truth. The exam index and linked task Markdown are relevance signals, not independent sources for new course content.
 
 ## Inputs
 
-The working directory contains:
+Read these files before editing:
 
-- `./anki.txt` — the generated Anki cards. This is the only allowed source for final card content.
-- `./presentation.pdf` — the presentation that the cards were generated from. Use it to understand context and verify whether cards are grounded in the presentation.
-- `./Exam/` — a directory containing older exams and solutions from previous years for the same class.
+- `./anki.txt`: the flashcard set to refine.
+- `./presentation.pdf`: the source material used to verify terminology, claims, and slide references.
+- `./Exam/Parsed/index.md`: the topic and technical-term index for the parsed exams.
+- Markdown files linked from `./Exam/Parsed/index.md`: the full exam tasks, subtasks, and solutions needed to understand each indexed reference.
 
-The exams may contain topics that are not covered by the presentation or the generated Anki cards. Do **not** generate new cards from the exams unless the relevant content is already present in `./anki.txt`.
+If `./Exam/Parsed/index.md` or its linked Markdown files do not exist, use the corresponding exam and solution PDFs under `./Exam/` as a fallback.
 
-## Core Rule
+## Output
 
-Only keep, rewrite, merge, or delete cards that already exist in `./anki.txt`.
+Rewrite `./anki.txt` in place unless the user requests another output path.
 
-Do **not** introduce new factual content from `./Exam/` that is not represented in the generated cards.
+The final file should normally contain about 60-70 cards. Treat this as a target range rather than an absolute rule: preserve a few extra cards if removing them would create an important coverage gap, and use fewer cards when the source material does not justify more.
 
-The exams are used only to estimate importance, not to expand the deck.
+Preserve the existing card syntax and ordering conventions. Do not renumber retained cards merely to close gaps.
 
-## Goal
+## Core Principles
 
-Produce a refined `anki.txt` containing roughly 60–70 high-value cards.
+1. Use `presentation.pdf` as the factual authority.
+2. Use `Exam/Parsed/index.md` to discover potentially exam-relevant concepts.
+3. Follow index references into the linked Markdown before assigning importance.
+4. Judge relevance from the actual task, subtask, and solution context rather than from an isolated index term.
+5. Prefer cards that test reusable understanding over cards that test incidental wording.
+6. Preserve broad course coverage instead of selecting only historically examined material.
+7. Merge overlap before deleting distinct concepts.
+8. Keep cards atomic enough to review effectively.
+9. Do not add facts found only in the exam corpus.
 
-The final cards should be:
+## Workflow
 
-- Exam-relevant.
-- Conceptually important.
-- Atomic.
-- Non-redundant.
-- Clear without depending on slide numbers for understanding.
-- Preserve existing source references in card headers, such as `(page 9)`.
-- Focused on definitions, mechanisms, contrasts, formulas, assumptions, and typical exam-style questions.
+### 1. Inspect the Existing Deck
 
-## High-Level Workflow
+Read all of `anki.txt` and determine:
 
-1. Read `./anki.txt` and parse all generated cards.
-2. Read `./presentation.pdf` to understand the intended topic scope.
-3. Read all files in `./Exam/`, including solutions if available.
-4. Identify which concepts from the generated cards appear in past exams.
-5. Score each card based on importance, exam recurrence, conceptual centrality, and redundancy.
-6. Remove low-value, duplicate, overly specific, trivial, or common-sense cards.
-7. Merge overlapping cards where appropriate.
-8. Rewrite selected cards for clarity and atomicity.
-9. Output the refined card list back to `./anki.txt`, unless instructed otherwise.
+- the card format;
+- the current number of cards;
+- the numbering scheme;
+- major topic groups;
+- duplicate or near-duplicate cards;
+- cards with overloaded answers;
+- cards that appear unsupported, trivial, or too narrow.
 
-## Card Selection Criteria
+Do not change the file until its structure is understood.
 
-Prioritize cards that ask about:
+### 2. Verify the Course Structure
 
-- Definitions of central terms.
-- Core concepts repeatedly used throughout the presentation.
-- Differences or comparisons between related concepts.
-- Algorithms, models, architectures, or workflows.
-- Formulas, metrics, evaluation methods, or assumptions.
-- Limitations, advantages, disadvantages, or trade-offs.
-- Concepts that appear in previous exams or solutions.
-- Concepts required to answer likely exam questions.
+Read `presentation.pdf` with the `pdf` skill and build a compact outline of the course:
 
-Keep cards that are strongly connected to previous exams even if they seem slightly less central in the slides.
+- major chapters;
+- foundational definitions;
+- processes and methods;
+- models and architectures;
+- quality attributes and principles;
+- comparisons and trade-offs;
+- diagrams or relationships that are central to the course.
 
-## Exam-Based Importance
+Use this outline to ensure the refined deck does not omit an entire major area.
 
-When reading `./Exam/`, look for semantic overlap with existing cards, not only exact wording.
+### 3. Read the Exam Index
 
-Examples of valid overlap:
+Read all of `Exam/Parsed/index.md`, including both the topic section and the word or terminology section.
 
-- A card asks for the definition of “precision,” and an exam asks students to compute or explain precision.
-- A card asks about the difference between stemming and lemmatization, and an exam solution mentions that distinction.
-- A card asks about an algorithm’s main idea, and an exam asks students to apply that algorithm.
+Record:
 
-Exam occurrence should increase a card’s priority when:
+- broad topics and their exercise references;
+- technical terms, abbreviations, named methods, tools, standards, and models;
+- repeated references across distinct exams;
+- references to exact subtasks;
+- spelling variants, German and English equivalents, abbreviations, and closely related terminology.
 
-- The concept appears in exam questions.
-- The concept appears in official solutions.
-- The concept appears across multiple years.
-- The concept is needed to solve a calculation, explanation, or comparison task.
+The index is a retrieval map. Do not infer the meaning or importance of a reference from its entry alone.
 
-Do not create a new card just because an exam covers a related topic. Only use exam content to rank cards already present in `./anki.txt`.
+### 4. Resolve Relevant References
 
-## Low-Value Card Criteria
+For every concept represented in `anki.txt`, search the index for:
 
-Remove cards that are primarily:
+- the exact term;
+- singular and plural forms;
+- abbreviations and expanded forms;
+- German and English variants;
+- common spelling variants;
+- broader parent topics;
+- directly related technical terms.
 
-- Common sense.
-- Too obvious from general background knowledge.
-- Purely administrative.
-- About slide structure rather than content.
-- Too specific to an example unless the example is exam-relevant.
-- Repetitive duplicates of better cards.
-- Overly broad and vague.
-- Too detailed for exam preparation.
-- Asking for isolated facts that do not support understanding.
-- Asking about wording, phrasing, or incidental slide details.
+Follow every relevant reference to the linked exam Markdown file. Read the complete referenced exercise or subtask and its corresponding solution section.
 
-Examples of weak cards:
+Determine:
 
-- “What does the slide introduce?”
-- “Why is this topic important?” when the answer is generic.
-- “What is shown in the figure?” without a deeper concept.
-- “What is an example of X?” when X itself is already covered and the example is not exam-relevant.
-- “What does this bullet point say?”
+- what knowledge the question actually tests;
+- whether the concept is central or merely incidental;
+- whether recall, explanation, comparison, application, modeling, or evaluation is required;
+- which presentation concept the task corresponds to;
+- whether the same concept recurs independently in other exams.
 
-## Redundancy Handling
+Do not count multiple index entries pointing to the same task as independent evidence.
 
-If multiple cards cover the same idea, keep the strongest one.
+### 5. Build a Relevance Map
 
-Prefer:
+Create an internal mapping from each candidate card or concept to:
 
-- A definition card over several shallow example cards.
-- A contrast card over two separate isolated fact cards.
-- A mechanism card over a memorization-only wording card.
-- An exam-aligned card over a non-exam-aligned duplicate.
+- presentation chapter;
+- supporting slide or slide range;
+- matching index terms and topics;
+- linked exam file and task or subtask;
+- number of distinct exams containing a substantive match;
+- depth of examination;
+- conceptual importance;
+- overlap with other cards.
 
-Merge cards only when the result remains atomic enough for Anki.
+Use the linked task wording and solution context to distinguish genuine matches from superficial term occurrences.
 
-Do not merge unrelated concepts into one large card.
+### 6. Score Candidate Cards
 
-When merging cards, preserve source references from the original card headers. If all merged cards come from the same page, keep that page reference. If merged cards come from multiple pages, use a compact combined reference such as `(pages 10-11)` or `(pages 10, 14)`.
+Score each card using these factors:
 
-## Scoring Heuristic
+#### Exam recurrence
 
-Use the following internal scoring model when deciding what to keep.
+- High: substantively tested in several distinct exams.
+- Medium: tested once or twice, or appears as a meaningful part of a larger task.
+- Low: only mentioned incidentally or absent from the parsed exam corpus.
 
-### Exam relevance
+#### Conceptual centrality
 
-- 3 points: concept appears in multiple past exams or is central to an exam task.
-- 2 points: concept appears in one past exam or solution.
-- 1 point: concept is indirectly useful for solving exam tasks.
-- 0 points: no detected exam relevance.
+- High: foundational definition, principle, process, architecture, model, or relationship.
+- Medium: useful supporting detail.
+- Low: isolated fact, list fragment, or implementation trivia.
 
-### Conceptual importance
+#### Coverage value
 
-- 3 points: core definition, formula, algorithm, model, or principle.
-- 2 points: important supporting concept.
-- 1 point: minor but useful detail.
-- 0 points: incidental detail.
+- High: the card is the only good representative of a major course area.
+- Medium: it supports a covered area without being unique.
+- Low: several retained cards already test the same knowledge.
 
-### Card quality
+#### Card quality
 
-- 2 points: clear, atomic, and directly testable.
-- 1 point: useful but needs rewriting.
-- 0 points: vague, redundant, or poorly scoped.
+- High: clear, atomic, accurate, and directly answerable.
+- Medium: useful but needs tightening or merging.
+- Low: ambiguous, redundant, overloaded, or unsupported.
 
-### Penalties
+Prioritize cards with strong combined value. A card absent from the index may still be retained when it is foundational or needed for broad coverage.
 
-Subtract points for:
+### 7. Merge Redundant Cards
 
-- Redundancy with another stronger card.
-- Common-sense content.
-- Excessive specificity.
-- Slide-only wording.
-- Content not grounded in `./anki.txt`.
+Before deleting cards, look for opportunities to merge:
 
-Prefer cards with the highest total score until the target deck size is reached.
+- duplicate definitions;
+- a definition and a separate card listing the same properties;
+- multiple cards that divide one short coherent process unnecessarily;
+- synonymous concepts expressed with different terminology;
+- cards that test the same distinction from nearly identical angles.
 
-## Target Deck Size
+A merged card must remain reviewable. Do not create a large answer containing several unrelated concepts merely to reduce the count.
 
-Aim for 60–70 cards total.
+When merging:
 
-If the generated deck covers very little material, fewer cards are acceptable.
+- retain the best existing card number;
+- combine only closely related information;
+- preserve the most precise wording;
+- verify the result against `presentation.pdf`;
+- preserve or correct the slide reference.
 
-If the presentation is unusually broad and many cards are clearly exam-relevant, slightly exceed 70 only when necessary. Do not exceed 80 unless explicitly instructed.
+### 8. Remove Low-Value Cards
 
-If there are far more than 70 apparently useful cards, keep the most exam-relevant and foundational ones.
+Remove cards that are:
 
-## Rewriting Rules
+- exact or near duplicates;
+- unsupported by the presentation;
+- excessively narrow;
+- obvious from another retained card;
+- focused on incidental examples rather than transferable knowledge;
+- poorly phrased and not worth repairing;
+- redundant list fragments;
+- based on a term that appears in the index but is not substantively tested in the linked task.
 
-Rewrite cards to improve clarity, but do not add unsupported information.
+Do not remove a card solely because its concept does not occur in the index.
 
-Each final card should:
+### 9. Repair Retained Cards
 
-- Ask exactly one main thing.
-- Be understandable without seeing the slide.
-- Avoid phrases like “according to the slide,” “in this presentation,” or “as shown above.”
-- Keep the existing page reference in the card header; do not remove it just because the card text should be self-contained.
-- Use precise terminology.
-- Prefer concise answers.
-- Include short examples only when they materially improve understanding or exam preparation.
+For every retained or merged card:
 
-Good formats:
+- verify the answer against `presentation.pdf`;
+- correct terminology and grammar;
+- keep the question unambiguous;
+- keep the answer concise but complete;
+- retain useful context needed to distinguish similar concepts;
+- verify the slide reference;
+- preserve the established Anki formatting.
 
-```text
-Front: 
-What is [concept]?
-Back: 
-[Concise definition].
-```
+Do not silently introduce claims that cannot be traced to the presentation.
 
-```text
-Front: 
-How does [method] differ from [related method]?
-Back: 
-[Key distinction].
-```
+### 10. Check Coverage and Count
 
-```text
-Front: 
-Why is [assumption] important for [method]?
-Back: 
-[Reason].
-```
+After the first reduction pass:
 
-```text
-Front: 
-What are the main steps of [algorithm/process]?
-Back: 
-[Short ordered list].
-```
+1. Count the remaining cards.
+2. Compare them against the presentation outline.
+3. Confirm that major exam-index topics are represented where the presentation supports them.
+4. Confirm that foundational topics absent from the index were not accidentally removed.
+5. Review overrepresented topics for further consolidation.
+6. Review underrepresented topics for harmful gaps.
+7. Adjust toward the target of roughly 60-70 cards.
 
-## Output Format
+### 11. Preserve Numbering and Order
 
-Overwrite or create the final `./anki.txt` using this exact style unless the existing file uses a clearly different user-required format:
+Keep cards in their existing conceptual or slide order.
 
-```text
-1. Card (page 9)
-Front: 
-...
-Back: 
-...
+- Do not renumber retained cards.
+- When inserting a necessary new card between existing cards, append a decimal to the preceding card number, such as `15.1`.
+- Place inserted cards in the correct chronological position.
+- Do not append inserted cards arbitrarily to the end.
 
-2. Card (pages 10-11)
-Front: 
-...
-Back: 
-...
-```
+New cards should be rare during finetuning and should only repair a clear coverage gap supported by the presentation.
 
-Preserve page/source references that already exist in `./anki.txt`. For rewritten cards, keep the original reference. For merged cards, combine references as needed.
+## Exam-Index Search Strategy
 
-Do not use Markdown bullets inside the final file unless they are needed inside an answer.
+Search broadly enough to avoid missing relevant references:
 
-Do not include analysis, scoring notes, or explanations in `./anki.txt`.
+- Start with the exact concept named in a card.
+- Expand abbreviations and search both forms.
+- Search related terminology used in the presentation.
+- Check the broad topic section when no exact word match exists.
+- Check the word section for precise subtask references.
+- Follow links and inspect the full task context.
+- Read the corresponding solution directly below the task.
+- Track recurrence by distinct exam and substantive task, not raw link count.
+
+Examples:
+
+- A card about the Single Responsibility Principle should also be checked under `SRP`, `SOLID`, responsibility, and design principles.
+- A card about web services may require searches for `SOAP`, `WSDL`, service-oriented architecture, interface, and protocol.
+- A card about software components may require searches for component, interface, connector, Palladio, and architecture.
+
+These expansions are for retrieval only. Keep a match only when the linked task actually tests the concept.
 
 ## Required Final Summary
 
-After writing the refined file, report briefly:
+After editing, report:
 
-- How many cards were in the original deck.
-- How many cards remain.
-- Whether past exams were used successfully.
-- Any limitations, such as unreadable scans or missing solutions.
+- original card count;
+- final card count;
+- number of removed cards;
+- number of merged card groups;
+- number of newly added cards, if any;
+- whether the exam index and linked Markdown were used successfully;
+- any important coverage decisions;
+- any limitations such as missing index entries, broken links, or incomplete task or solution Markdown.
 
-Do not include the full card list in the chat unless the user asks for it.
+## Constraints
 
-## Handling PDFs and Scans
-
-When reading `./presentation.pdf` and files in `./Exam/`:
-
-- Extract text directly when possible.
-- If a PDF page appears to be scanned or image-only, use OCR only when necessary.
-- If OCR is unreliable, state this in the final summary.
-- Prefer official solutions over guessed interpretations.
-
-## Important Constraints
-
-- Do not generate new content from exams.
-- Do not create cards for exam topics absent from `./anki.txt`.
-- Do not keep cards solely because they match an exam if the card is factually unsupported by the generated deck.
-- Do not preserve all slide details.
-- Do not optimize for maximum coverage at the expense of usefulness.
-- Do not exceed the target size unless clearly justified.
-
-## Quality Checklist
-
-Before finishing, verify:
-
-- The final deck has roughly 60–70 cards.
-- No card depends on seeing a slide.
-- No card asks trivial/common-sense questions.
-- Duplicate cards were removed or merged.
-- Exam-relevant concepts were prioritized.
-- No new content was introduced from the exams.
-- Final output is written to `./anki.txt`.
+- Do not generate a replacement deck from scratch when the existing deck can be refined.
+- Do not use the index as a substitute for reading the linked task.
+- Do not treat every indexed term as equally important.
+- Do not create cards for exam topics unsupported by `presentation.pdf`.
+- Do not discard important presentation topics merely because they are absent from the index.
+- Do not change the established Anki file format.
+- Do not renumber the deck solely for cosmetic consistency.

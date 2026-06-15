@@ -1,0 +1,4 @@
+interface:
+  display_name: "Index Exam Markdown"
+  short_description: "Build topic and terminology indexes for exams"
+  default_prompt: "Use $index-exam-markdown to build a detailed topic and terminology index for the parsed exams."

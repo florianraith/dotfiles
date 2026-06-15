@@ -37,6 +37,7 @@ if [[ $- == *i* ]]; then
   goto-workplace() {
     directories=(
       ~/Documents
+      ~/Vaults
       ~/Work 
       ~/Work/zewotherm 
       ~/Work/pluto 
