@@ -28,7 +28,7 @@ Rewrite `./anki.txt` in place unless the user requests another output path.
 
 The final file should normally contain about 60-70 cards. Treat this as a target range rather than an absolute rule: preserve a few extra cards if removing them would create an important coverage gap, and use fewer cards when the source material does not justify more.
 
-Preserve the existing card syntax and ordering conventions. Do not renumber retained cards merely to close gaps.
+Preserve the existing card syntax and ordering conventions. After the final card selection is complete, renumber all cards sequentially from 1 without gaps.
 
 ## Core Principles
 
@@ -55,6 +55,7 @@ Read all of `anki.txt` and determine:
 - duplicate or near-duplicate cards;
 - cards with overloaded answers;
 - cards that appear unsupported, trivial, or too narrow.
+- questions that depend on source artifacts or learning context, especially wording such as "in this lecture", "in the presentation", "on the slide", "in the diagram", "shown in the diagram", "shown in the lecture", "according to the lecture", or "according to the diagram".
 
 Do not change the file until its structure is understood.
 
@@ -197,6 +198,7 @@ For every retained or merged card:
 - verify the answer against `presentation.pdf`;
 - correct terminology and grammar;
 - keep the question unambiguous;
+- rewrite questions so they are source-artifact independent and do not mention standalone source-artifact words such as lecture, presentation, slide, deck, figure, or diagram, or phrases such as shown, mentioned, named, or highlighted there; use whole-word matching so terms like representation are allowed;
 - keep the answer concise but complete;
 - retain useful context needed to distinguish similar concepts;
 - verify the slide reference;
@@ -214,14 +216,15 @@ After the first reduction pass:
 4. Confirm that foundational topics absent from the index were not accidentally removed.
 5. Review overrepresented topics for further consolidation.
 6. Review underrepresented topics for harmful gaps.
-7. Adjust toward the target of roughly 60-70 cards.
+7. Scan every question for forbidden source-artifact wording using whole-word matching, and repair any match before finalizing. Do not flag substrings inside valid technical terms; for example, representation is allowed.
+8. Adjust toward the target of roughly 60-70 cards.
 
-### 11. Preserve Numbering and Order
+### 11. Preserve Order and Renumber Sequentially
 
 Keep cards in their existing conceptual or slide order.
 
-- Do not renumber retained cards.
-- When inserting a necessary new card between existing cards, append a decimal to the preceding card number, such as `15.1`.
+- During selection and merging, you may keep original card numbers temporarily to track provenance.
+- Before writing the final `anki.txt`, renumber all cards sequentially as `1. Card`, `2. Card`, `3. Card`, and so on without gaps.
 - Place inserted cards in the correct chronological position.
 - Do not append inserted cards arbitrarily to the end.
 
@@ -258,6 +261,7 @@ After editing, report:
 - number of merged card groups;
 - number of newly added cards, if any;
 - whether the exam index and linked Markdown were used successfully;
+- whether the source-artifact wording scan passed after repairs;
 - any important coverage decisions;
 - any limitations such as missing index entries, broken links, or incomplete task or solution Markdown.
 
@@ -269,4 +273,4 @@ After editing, report:
 - Do not create cards for exam topics unsupported by `presentation.pdf`.
 - Do not discard important presentation topics merely because they are absent from the index.
 - Do not change the established Anki file format.
-- Do not renumber the deck solely for cosmetic consistency.
+- Do not leave gaps or decimal card numbers in the final deck; final card numbers must be sequential integers.

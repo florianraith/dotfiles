@@ -166,6 +166,7 @@ alias sial=sail
 alias gs='git status'
 alias gla='git log --oneline --graph --decorate --all --color'
 alias gpo='git push origin'
+alias amend='HUSKY=0 git commit --amend'
 alias dotfiles="/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME"
 alias mov2gif='f() { ffmpeg -i "$1" -vf "fps=15,scale=1080:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" "${1%.*}.gif" }; f'
 

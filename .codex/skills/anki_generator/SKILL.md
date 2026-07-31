@@ -103,6 +103,21 @@ Avoid:
   - "... shown on the slide?"
 - Questions must be answerable without knowing the lecture slides.
 
+#### Source-Artifact Independent Questions
+
+- Questions must not depend on presentation artifacts or the learning context.
+- Do NOT phrase questions with terms such as:
+  - "in this lecture"
+  - "in the presentation"
+  - "on the slide"
+  - "in the diagram"
+  - "shown in the diagram"
+  - "shown in the lecture"
+  - "according to the lecture"
+  - "according to the diagram"
+- If a generated question contains source-artifact wording, rewrite it so it asks about the concept directly.
+- It is acceptable to use slide numbers only in the card header, never in the question text.
+
 ### Card Quality Checklist (MANDATORY)
 
 Each card must satisfy:
@@ -121,6 +136,8 @@ Each card must satisfy:
    Each card must make sense without relying on other cards.
 7. Avoid Long Text
    If an answer would be long, split it into multiple cards.
+8. Source-Artifact Independence
+   The question must not mention standalone source-artifact words such as lecture, presentation, slide, deck, figure, or diagram, or phrases such as shown, mentioned, named, or highlighted there when they refer to the source material or learning context. Whole-word matching is required; terms like representation are allowed. Before rewriting a flagged question, classify whether the flagged word is actually valid domain/content terminology. Keep it when it names a domain concept from the source content rather than the source artifact itself, such as "presentation layer" in enterprise application architecture.
 
 ### Slide Number Requirement
 
@@ -195,3 +212,15 @@ Example: <Example 1>, <Example 2>
 ### Output
 
 Rewrite the file "anki.txt" so that each card includes the contextual examples appended to the answer when applicable.
+
+## Final Validation
+
+Before finishing, scan all question text for source-artifact wording using whole-word matching, such as "lecture", "presentation", "slide", "deck", "figure", "diagram", "shown", "mentioned", "named", or "highlighted".
+
+For each match, first classify the usage:
+
+- Rewrite it if it refers to the source artifact, learning context, or visual placement, such as "in the presentation", "on the slide", "shown in the diagram", "mentioned in the lecture", or "highlighted there".
+- Keep it if it is valid domain/content terminology from the source material and the question is still independent of the source artifact. For example, keep "presentation layer" when the topic is enterprise application architecture, because it names a domain layer rather than the lecture presentation.
+- Do not flag substrings inside valid technical terms; for example, "representation" is allowed.
+
+Rewrite only the questions whose matched wording refers to the source artifact while preserving the slide number in the card header.
