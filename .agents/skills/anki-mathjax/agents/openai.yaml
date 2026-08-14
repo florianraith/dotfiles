@@ -1,0 +1,4 @@
+interface:
+  display_name: "Anki MathJax"
+  short_description: "Convert Anki math notation to MathJax"
+  default_prompt: "Use $anki-mathjax to convert mathematical notation in anki.txt to Anki MathJax."

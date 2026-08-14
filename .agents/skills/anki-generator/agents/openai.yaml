@@ -1,0 +1,4 @@
+interface:
+  display_name: "Anki Generator"
+  short_description: "Generate Anki cards from presentations"
+  default_prompt: "Use $anki-generator to generate Anki flashcards from presentation.pdf."
