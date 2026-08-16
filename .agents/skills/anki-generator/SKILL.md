@@ -83,10 +83,17 @@ Avoid:
 
 ### Strict Constraints
 
-#### No Acronym Introduction
+#### Abbreviation Handling
 
-- Do not introduce acronyms that are not used in the slides.
-- If an acronym is used, write the full term first and optionally place the acronym in parentheses afterward.
+- Use only abbreviations that appear in the slides.
+- Classify each abbreviation by how the slides use it:
+  1. **Topic-introduced abbreviation:** If the slides introduce the abbreviation as a concept, model, or method and provide its meaning, create an introduction card at the first relevant position:
+     - Front: `What is <ABBREVIATION>?`
+     - Back: `<Full term> (<ABBREVIATION>): <concise explanation of the concept>.`
+     After this card, use the abbreviation alone without repeatedly expanding it.
+  2. **Assumed-known abbreviation:** If the slides use an abbreviation without introducing its topic or expansion, treat it as prior knowledge and reuse it without expansion. Do not create an expansion-only card. Examples can include RGB, API, and LLM when the slides merely reuse them.
+- Do not infer or invent an expansion that the slides do not provide.
+- Place every abbreviation-introduction card before later cards that use that abbreviation.
 
 #### No Example-Based Questions
 
@@ -224,3 +231,11 @@ For each match, first classify the usage:
 - Do not flag substrings inside valid technical terms; for example, "representation" is allowed.
 
 Rewrite only the questions whose matched wording refers to the source artifact while preserving the slide number in the card header.
+
+Validate abbreviation handling:
+
+- every abbreviation occurs in the slides;
+- every topic-introduced abbreviation has an earlier `What is ...?` card with its expansion and explanation;
+- later cards use the shorthand without repeatedly expanding it;
+- assumed-known abbreviations are not expanded or given synthetic introduction cards;
+- no expansion was inferred beyond the slides.

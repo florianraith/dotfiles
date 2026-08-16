@@ -41,6 +41,19 @@ Preserve the existing card syntax and ordering conventions. After the final card
 7. Merge overlap before deleting distinct concepts.
 8. Keep cards atomic enough to review effectively.
 9. Do not add facts found only in the exam corpus.
+10. Preserve abbreviation learning order: retain or create one introduction card for each topic-introduced abbreviation, then use its shorthand consistently.
+
+## Abbreviation Handling
+
+- Use only abbreviations that appear in the slides.
+- Classify each abbreviation from the way the slides present it:
+  1. **Topic-introduced abbreviation:** If the slides introduce the abbreviation as a concept, model, or method and provide its meaning, retain or create an introduction card before later shorthand use:
+     - Front: `What is <ABBREVIATION>?`
+     - Back: `<Full term> (<ABBREVIATION>): <concise explanation of the concept>.`
+     Later cards may use the abbreviation alone without repeating its expansion.
+  2. **Assumed-known abbreviation:** If the slides use an abbreviation without introducing its topic or expansion, treat it as prior knowledge and reuse it without expansion. Do not create an expansion-only card. Examples can include RGB, API, and LLM when the slides merely reuse them.
+- Do not infer or invent an expansion that the slides do not provide.
+- Do not remove the only required introduction card when later cards depend on that abbreviation.
 
 ## Workflow
 
@@ -55,6 +68,7 @@ Read all of `anki.txt` and determine:
 - duplicate or near-duplicate cards;
 - cards with overloaded answers;
 - cards that appear unsupported, trivial, or too narrow.
+- abbreviation use, classification, and introduction order;
 - questions that depend on source artifacts or learning context, especially wording such as "in this lecture", "in the presentation", "on the slide", "in the diagram", "shown in the diagram", "shown in the lecture", "according to the lecture", or "according to the diagram".
 
 Do not change the file until its structure is understood.
@@ -175,6 +189,7 @@ When merging:
 - preserve the most precise wording;
 - verify the result against `presentation.pdf`;
 - preserve or correct the slide reference.
+- do not merge away the only required introduction card for an abbreviation used by later cards.
 
 ### 8. Remove Low-Value Cards
 
@@ -201,6 +216,7 @@ For every retained or merged card:
 - rewrite questions so they are source-artifact independent and do not mention standalone source-artifact words such as lecture, presentation, slide, deck, figure, or diagram, or phrases such as shown, mentioned, named, or highlighted there; use whole-word matching so terms like representation are allowed;
 - keep the answer concise but complete;
 - retain useful context needed to distinguish similar concepts;
+- apply the abbreviation policy and ensure each required introduction card precedes later shorthand use;
 - verify the slide reference;
 - preserve the established Anki formatting.
 
@@ -217,7 +233,8 @@ After the first reduction pass:
 5. Review overrepresented topics for further consolidation.
 6. Review underrepresented topics for harmful gaps.
 7. Scan every question for forbidden source-artifact wording using whole-word matching, and repair any match before finalizing. Do not flag substrings inside valid technical terms; for example, representation is allowed.
-8. Adjust toward the target of roughly 60-70 cards.
+8. Validate abbreviation classification and learning order.
+9. Adjust toward the target of roughly 60-70 cards.
 
 ### 11. Preserve Order and Renumber Sequentially
 
@@ -271,6 +288,7 @@ After editing, report:
 - Do not use the index as a substitute for reading the linked task.
 - Do not treat every indexed term as equally important.
 - Do not create cards for exam topics unsupported by `presentation.pdf`.
+- Do not invent abbreviation expansions absent from the slides.
 - Do not discard important presentation topics merely because they are absent from the index.
 - Do not change the established Anki file format.
 - Do not leave gaps or decimal card numbers in the final deck; final card numbers must be sequential integers.
