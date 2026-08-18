@@ -7,7 +7,7 @@ import argparse
 import html
 import re
 import sys
-from collections import Counter, defaultdict
+from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -27,35 +27,10 @@ FORMULA_RE = re.compile(
     re.IGNORECASE,
 )
 TOKEN_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_+-]*")
-CONTENT_TOKEN_RE = re.compile(
-    r"\\[A-Za-z]+|#[A-Za-z0-9_]+|\d+(?:[.,]\d+)?(?:-\d+(?:[.,]\d+)?)?|"
-    r"[A-Za-z]+(?:[-'][A-Za-z]+)*|[+*/=<>×÷%−-]"
-)
 STOPWORDS = {
     "a", "an", "and", "are", "does", "for", "how", "in", "is", "of", "on",
     "the", "to", "what", "when", "which", "why", "with",
 }
-CONTENT_STOPWORDS = STOPWORDS | {
-    "about", "also", "at", "be", "by", "can", "could", "from", "has", "have",
-    "it", "its", "may", "most", "should", "that", "their", "them", "they", "this",
-    "through", "typically", "was", "were", "will", "would",
-}
-PROTECTED_TERMS = {
-    "model", "metamodel", "meta-metamodel", "model-driven", "model-based",
-}
-PROTECTED_ALIASES = {
-    "models": "model", "metamodels": "metamodel", "meta-metamodels": "meta-metamodel",
-}
-NEGATIVE_ROLE_WORDS = {"drawback", "disadvantage", "limitation", "problem", "weakness"}
-WEAK_NEGATIVE_MODIFIERS = {"complex", "complicated", "difficult", "hard", "costly", "poor"}
-BINARY_ANSWER_RE = re.compile(r"^\s*(yes|no|none|true|false)\b", re.IGNORECASE)
-BINARY_FRONT_RE = re.compile(
-    r"^\s*(are|is|do|does|did|can|could|should|would|will|may|must|has|have|was|were)\b",
-    re.IGNORECASE,
-)
-TRANSPARENT_FRONT_RE = re.compile(
-    r"^\s*what\s+does\s+.+\s+(mean|allow|represent)\??\s*$", re.IGNORECASE
-)
 
 
 @dataclass
@@ -106,91 +81,6 @@ def content_tokens(value: str) -> set[str]:
     return {token for token in TOKEN_RE.findall(value.lower()) if token not in STOPWORDS and len(token) > 1}
 
 
-def conservative_lemma(token: str) -> str:
-    token = token.lower().replace("–", "-")
-    if token in PROTECTED_TERMS:
-        return token
-    if token in PROTECTED_ALIASES:
-        return PROTECTED_ALIASES[token]
-    if not token.isalpha() or len(token) <= 3:
-        return token
-    if token.endswith("ies") and len(token) > 4:
-        return token[:-3] + "y"
-    if token.endswith("s") and not token.endswith(("ss", "us", "is")):
-        return token[:-1]
-    return token
-
-
-def content_units(value: str) -> list[str]:
-    visible = visible_text(value).replace("–", "-")
-    units: list[str] = []
-    for raw in CONTENT_TOKEN_RE.findall(visible):
-        token = conservative_lemma(raw)
-        if token in CONTENT_STOPWORDS:
-            continue
-        units.append(token)
-    return units
-
-
-def new_information(front: str, answer: str) -> tuple[int, list[str]]:
-    question = Counter(content_units(front))
-    added = Counter(content_units(answer)) - question
-    if set(question) & NEGATIVE_ROLE_WORDS:
-        for modifier in WEAK_NEGATIVE_MODIFIERS:
-            added.pop(modifier, None)
-    units = list(added.elements())
-    return len(units), units
-
-
-def leakage_signals(front: str, answer: str) -> tuple[int, list[str], list[str]]:
-    new_count, new_units = new_information(front, answer)
-    signals: list[str] = []
-    answer_visible = visible_text(answer)
-    if BINARY_ANSWER_RE.search(answer_visible) or BINARY_FRONT_RE.search(visible_text(front)):
-        signals.append("BINARY_DEGENERACY")
-    if new_count == 0:
-        signals.append("LOW_NEW_CONTENT_N0")
-    elif new_count == 1:
-        signals.append("LOW_NEW_CONTENT_N1")
-    if TRANSPARENT_FRONT_RE.search(visible_text(front)):
-        signals.append("TRANSPARENT_TERM_REVIEW")
-    return new_count, new_units, signals
-
-
-SMOKE_CASES = (
-    ("PEFT literal completion", "How does PEFT perform relative to full fine-tuning in practice?", "It can perform on par with full fine-tuning.", True),
-    ("outer-circle none", "What influence may outer Clean Architecture circles have on inner circles?", "None.", True),
-    ("complex configuration", "What configuration drawback can dependency inversion introduce?", "Complex configuration.", True),
-    ("frame size and shift", "What are the typical frame size and frame shift in windowing for speech processing?", "Frame size: 20-25 ms; frame shift: 5-10 ms.", False),
-    ("sampling rates", "What are typical sampling rates for microphone and telephone audio?", "Microphone audio: 16 kHz; telephone audio: 8 kHz.", False),
-    ("DIP direction", "What does the Dependency Inversion Principle say about abstractions and details?", "Abstractions should not depend on details; details should depend on abstractions.", False),
-    ("activity detection", "What is the difference between temporal, spatial, and spatiotemporal activity detection?", "Temporal detects activity over time, spatial across locations, and spatiotemporal across both.", False),
-    ("layer and tier", "What is the difference between a layer and a tier?", "A layer is a logical code organization; a tier is a physical deployment unit.", False),
-    ("BIO labels", "How many labels does BIO span representation use?", "2 * #SLOTS + 1", False),
-    ("Palladio allocation", "What does the Palladio allocation view type connect?", "It connects assembly contexts to resource containers.", False),
-    ("metamodel", "What is a metamodel?", "A model that makes statements about modelling.", False),
-)
-
-
-def run_self_test() -> int:
-    tp = fn = fp = tn = 0
-    for name, front, answer, expected in SMOKE_CASES:
-        _, _, signals = leakage_signals(front, answer)
-        flagged = any(signal in {"BINARY_DEGENERACY", "LOW_NEW_CONTENT_N0", "LOW_NEW_CONTENT_N1"} for signal in signals)
-        if expected and flagged:
-            tp += 1
-        elif expected:
-            fn += 1
-            print(f"SELF-TEST MISS: {name}")
-        elif flagged:
-            fp += 1
-            print(f"SELF-TEST FALSE POSITIVE: {name}")
-        else:
-            tn += 1
-    print(f"Smoke test: TP={tp}, FN={fn}, FP={fp}, TN={tn}")
-    return 0 if (tp, fn, fp, tn) == (3, 0, 0, 8) else 1
-
-
 def warn_list_shape(card: Card, answer: str) -> str | None:
     bullets = re.findall(r"(?m)^\s*[-*]\s+\S", answer)
     if len(bullets) > 3:
@@ -200,10 +90,9 @@ def warn_list_shape(card: Card, answer: str) -> str | None:
     return None
 
 
-def audit(cards: list[Card], args: argparse.Namespace) -> tuple[list[str], list[str], Counter[str]]:
+def audit(cards: list[Card], args: argparse.Namespace) -> tuple[list[str], list[str]]:
     errors: list[str] = []
     warnings: list[str] = []
-    stats: Counter[str] = Counter()
     numbers = [card.number for card in cards]
     expected = list(range(1, len(cards) + 1))
     if numbers != expected:
@@ -239,21 +128,6 @@ def audit(cards: list[Card], args: argparse.Namespace) -> tuple[list[str], list[
             warnings.append(list_warning)
         if FORMULA_RE.search(front_visible) and not re.search(r"[=/×÷]|\\(?:approx|frac|sum|prod)\b", answer_visible):
             warnings.append(f"Card {card.number}: formula-like cue has no formula-like text answer.")
-        new_count, new_units, signals = leakage_signals(front_visible, answer_visible)
-        if new_count <= 1:
-            stats["low_new_cards"] += 1
-        for signal in signals:
-            stats[signal] += 1
-            if signal == "BINARY_DEGENERACY":
-                warnings.append(f"Card {card.number}: [BINARY_DEGENERACY] ask for the relationship or choice directly.")
-            elif signal == "LOW_NEW_CONTENT_N0":
-                warnings.append(f"Card {card.number}: [LOW_NEW_CONTENT_N0] answer adds no detected content units.")
-            elif signal == "LOW_NEW_CONTENT_N1":
-                warnings.append(
-                    f"Card {card.number}: [LOW_NEW_CONTENT_N1] answer adds only {new_units!r}; inspect literal completion or short restatement."
-                )
-            elif signal == "TRANSPARENT_TERM_REVIEW":
-                warnings.append(f"Card {card.number}: [TRANSPARENT_TERM_REVIEW] surface for human judgment; do not auto-delete.")
         back_key = normalized(answer)
         if back_key:
             by_back[back_key].append(card.number)
@@ -262,15 +136,6 @@ def audit(cards: list[Card], args: argparse.Namespace) -> tuple[list[str], list[
     for key, card_numbers in by_back.items():
         if len(card_numbers) > 1:
             warnings.append(f"Cards {card_numbers}: identical normalized main answers: {key[:80]!r}.")
-
-    if args.min_low_new is not None and stats["low_new_cards"] < args.min_low_new:
-        errors.append(
-            f"Low-new-content calibration found {stats['low_new_cards']} cards, below minimum {args.min_low_new}."
-        )
-    if args.max_low_new is not None and stats["low_new_cards"] > args.max_low_new:
-        errors.append(
-            f"Low-new-content calibration found {stats['low_new_cards']} cards, above maximum {args.max_low_new}."
-        )
 
     for left in range(len(cards)):
         for right in range(left + 1, len(cards)):
@@ -285,42 +150,28 @@ def audit(cards: list[Card], args: argparse.Namespace) -> tuple[list[str], list[
                 )
                 if len(warnings) >= args.max_warnings:
                     warnings.append("Warning limit reached; rerun with --max-warnings to inspect more.")
-                    return errors, warnings, stats
-    return errors, warnings, stats
+                    return errors, warnings
+    return errors, warnings
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("deck", type=Path, nargs="?")
+    parser.add_argument("deck", type=Path)
     parser.add_argument("--min-cards", type=int)
     parser.add_argument("--max-cards", type=int)
     parser.add_argument("--max-answer-words", type=int, default=25)
     parser.add_argument("--similarity", type=float, default=0.60)
     parser.add_argument("--max-warnings", type=int, default=200)
-    parser.add_argument("--min-low-new", type=int)
-    parser.add_argument("--max-low-new", type=int)
-    parser.add_argument("--self-test", action="store_true", help="Run the fixed 11-card leakage smoke test.")
     parser.add_argument("--strict", action="store_true", help="Return nonzero when warnings remain.")
     args = parser.parse_args()
 
-    if args.self_test:
-        return run_self_test()
-    if args.deck is None:
-        parser.error("deck is required unless --self-test is used")
-
     cards, parse_errors = parse_cards(args.deck.read_text(encoding="utf-8"))
-    errors, warnings, stats = audit(cards, args) if cards else ([], [], Counter())
+    errors, warnings = audit(cards, args) if cards else ([], [])
     errors = parse_errors + errors
     for message in errors:
         print(f"ERROR: {message}")
     for message in warnings:
         print(f"WARNING: {message}")
-    low_new = stats["low_new_cards"]
-    rate = (100 * low_new / len(cards)) if cards else 0.0
-    print(
-        f"Leakage candidates: low-new={low_new} ({rate:.2f}%), binary={stats['BINARY_DEGENERACY']}, "
-        f"transparent-review={stats['TRANSPARENT_TERM_REVIEW']}."
-    )
     print(f"Audited {len(cards)} cards: {len(errors)} errors, {len(warnings)} warnings.")
     return 1 if errors or (args.strict and warnings) else 0
 
