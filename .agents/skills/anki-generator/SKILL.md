@@ -1,6 +1,6 @@
 ---
 name: anki-generator
-description: Generate high-quality Anki flashcards from presentation.pdf using a structured 3-phase process (knowledge extraction, flashcard generation, contextual examples).
+description: Generate concise, independently gradable Anki flashcards from presentation.pdf, including conceptual, contrastive, and slide-supported application cards, then audit cue quality, interference, and formatting.
 ---
 
 # Anki Generator from Presentation
@@ -31,7 +31,7 @@ This includes:
 
 ### Rules
 
-- Break the content into the smallest possible independent knowledge units.
+- Extract independent knowledge units, then group only facts retrieved through one coherent operation.
 - Examples contained in the slides should be treated as supporting information that clarifies concepts, not as primary facts to memorize.
 - Do NOT output this phase. It is only used internally.
 
@@ -45,24 +45,26 @@ Create flashcards that enable efficient memorization of the key concepts from th
 
 ### Guidelines
 
-- Each card must contain exactly one atomic fact or concept.
-- Cards must be concise and optimized for recall.
-- Prefer creating many small cards instead of fewer large cards.
-- If a slide contains multiple facts, create multiple cards.
-- If information is complex or long, split it into several smaller cards.
+- Test one retrieval operation per card. A formula, a contrast pair, or a short ordered sequence may contain several facts when they form one retrievable chunk.
+- Make every card concise and independently gradable.
+- Split unrelated facts and answers that require a pause between independently recalled parts.
+- Treat more than three unordered items or roughly 25 substantive answer words as repair triggers, not automatic failures.
 - Each card must be understandable independently and must not rely on knowledge of the slides.
-- Prefer questions on the front and short answers on the back.
+- Put a question on the front and a short, verbalizable answer on the back.
 
 ### Preferred Question Types
 
-Prefer Active Recall Questions
-Prefer questions such as:
+Prefer diagnostic active-recall questions such as:
 
 - What is ...?
 - Which ...?
 - Why ...?
 - What does ... mean?
 - What is the difference between ...?
+- Why does ... cause ...?
+- What breaks if ...?
+- Given ..., which method applies and why?
+- Given ..., what value results?
 
 ### Preferred Knowledge Type (VERY IMPORTANT)
 
@@ -95,9 +97,16 @@ Avoid:
 - Do not infer or invent an expansion that the slides do not provide.
 - Place every abbreviation-introduction card before later cards that use that abbreviation.
 
-#### No Example-Based Questions
+#### Examples and Application
 
-- Do NOT create questions that ask for specific examples.
+- Do not ask learners to reproduce incidental examples from the slides.
+- Create a constrained application card when a central slide-supported concept is naturally applied:
+  - formula: compute or interpret a result;
+  - principle: identify a violation or consequence;
+  - method or pattern: choose it for a situation;
+  - trade-off: predict what improves or breaks under stated conditions.
+- Use scenarios only to test slide-supported knowledge. Do not introduce external facts.
+- Make scenario cues specific enough to have one defensible answer.
 
 #### No Slide References
 
@@ -129,21 +138,23 @@ Avoid:
 
 Each card must satisfy:
 
-1. Atomicity
-   The card tests exactly one piece of knowledge.
-2. Clarity
-   The question must be unambiguous and understandable without additional context.
-3. Minimal Answer
-   The back should contain the shortest possible correct answer.
-4. Active Recall
-   Prefer recall-based questions rather than recognition.
-5. No Redundancy
-   Avoid repeating the same fact unless testing a different aspect.
-6. Independent Cards
-   Each card must make sense without relying on other cards.
-7. Avoid Long Text
-   If an answer would be long, split it into multiple cards.
-8. Source-Artifact Independence
+1. One retrieval operation
+   Require one clear grading decision. Split compound prompts and unrelated answer parts.
+2. Unique cue
+   Ask whether a knowledgeable learner could give another correct answer. If so, add the framework, answer type, count, or other diagnostic scope.
+3. Typed answer
+   Signal whether the answer is a name, count, formula, mechanism, consequence, comparison, or trade-off. A formula question must include the formula in text; a why-question must state the cause.
+4. Diagnostic verb
+   Use a verb that constrains the answer. Replace load-bearing uses of vague verbs such as identify, formalize, synthesize, define, play a role, is used for, and is important with the precise relationship being tested.
+5. Minimal, verbalizable answer
+   Put the shortest complete answer in text. Images may illustrate an answer but must not carry it alone.
+6. Bounded sets and sequences
+   For more than three unordered items, use semantic groups of at most three, invert into discriminating member cards, or keep only a count-and-group scaffold. For a long pipeline, teach local links first; keep a full-chain card only when reproducing the chain is itself useful.
+7. Independence and active recall
+   Make the card understandable without other cards or the slides, and require recall rather than recognition.
+8. Nonredundancy and interference
+   Avoid duplicate facts, identical backs, and parallel cues that differ only in a small label. Prefer explicit contrasts or wording whose differing terms determine the answer.
+9. Source-Artifact Independence
    The question must not mention standalone source-artifact words such as lecture, presentation, slide, deck, figure, or diagram, or phrases such as shown, mentioned, named, or highlighted there when they refer to the source material or learning context. Whole-word matching is required; terms like representation are allowed. Before rewriting a flagged question, classify whether the flagged word is actually valid domain/content terminology. Keep it when it names a domain concept from the source content rather than the source artifact itself, such as "presentation layer" in enterprise application architecture.
 
 ### Slide Number Requirement
@@ -202,7 +213,8 @@ For each card:
 - Do NOT modify the main answer text.
 - Append the examples after the answer on a new line.
 - The line must start with "Example: ".
-- Include at most two examples.
+- Prefer one example of at most roughly 20 words. Include a second only when it adds a useful contrast.
+- Do not append an example to a scenario card unless it adds distinct explanatory value.
 - If no suitable examples exist, leave the card unchanged.
 
 ### Format
@@ -222,6 +234,10 @@ Rewrite the file "anki.txt" so that each card includes the contextual examples a
 
 ## Final Validation
 
+Run the bundled script by its resolved skill path: `python3 <anki-generator-skill-directory>/scripts/audit_cards.py anki.txt`. Treat structural findings as failures and inspect every heuristic warning. Repair each true positive and record why any false positive is safe to retain internally.
+
+Then perform the semantic checks below, which the script cannot decide reliably.
+
 Before finishing, scan all question text for source-artifact wording using whole-word matching, such as "lecture", "presentation", "slide", "deck", "figure", "diagram", "shown", "mentioned", "named", or "highlighted".
 
 For each match, first classify the usage:
@@ -239,3 +255,13 @@ Validate abbreviation handling:
 - later cards use the shorthand without repeatedly expanding it;
 - assumed-known abbreviations are not expanded or given synthetic introduction cards;
 - no expansion was inferred beyond the slides.
+
+Validate cue and answer quality:
+
+- every card has one verbalizable pass criterion;
+- every answer matches the type requested by its question;
+- every unordered set larger than three has been grouped, inverted, or justified as one chunk;
+- no card asks for unconstrained recall of an entire architecture or process;
+- identical backs and highly similar fronts have been merged, contrasted, differentiated, or deliberately justified;
+- applicable central concepts include a slide-supported computation, choice, diagnosis, or explanation card where doing so improves transfer;
+- incidental implementation details remain only when conceptually important.

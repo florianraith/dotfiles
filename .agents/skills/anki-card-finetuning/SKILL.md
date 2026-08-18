@@ -1,6 +1,6 @@
 ---
 name: anki-card-finetuning
-description: Refine an overgenerated anki.txt file into roughly 60-70 high-value Anki cards, using presentation.pdf as source context and Exam/Parsed/index.md plus its linked exam Markdown files to prioritize exam-relevant concepts.
+description: Refine an overgenerated anki.txt into roughly 60-70 exam-focused, efficiently reviewable cards by verifying presentation content, resolving exam references, repairing cue and interference problems, and matching card operations to assessed tasks.
 ---
 
 # Anki Card Finetuning
@@ -19,6 +19,7 @@ Read these files before editing:
 - `./presentation.pdf`: the source material used to verify terminology, claims, and slide references.
 - `./Exam/Parsed/index.md`: the topic and technical-term index for the parsed exams.
 - Markdown files linked from `./Exam/Parsed/index.md`: the full exam tasks, subtasks, and solutions needed to understand each indexed reference.
+- Optional review telemetry or a deck review supplied by the user: use only metrics that can be mapped reliably to individual cards.
 
 If `./Exam/Parsed/index.md` or its linked Markdown files do not exist, use the corresponding exam and solution PDFs under `./Exam/` as a fallback.
 
@@ -42,6 +43,8 @@ Preserve the existing card syntax and ordering conventions. After the final card
 8. Keep cards atomic enough to review effectively.
 9. Do not add facts found only in the exam corpus.
 10. Preserve abbreviation learning order: retain or create one introduction card for each topic-introduced abbreviation, then use its shorthand consistently.
+11. Optimize one retrieval operation per card, not the smallest possible fact fragment.
+12. Match the card operation to the exam operation when the presentation supports it.
 
 ## Abbreviation Handling
 
@@ -68,6 +71,11 @@ Read all of `anki.txt` and determine:
 - duplicate or near-duplicate cards;
 - cards with overloaded answers;
 - cards that appear unsupported, trivial, or too narrow.
+- vague, under-specified, or compound cues;
+- unordered sets larger than three and answers longer than roughly 25 substantive words;
+- formula, mechanism, or comparison prompts whose answers have the wrong type;
+- empty or image-only text backs;
+- identical normalized answers and highly similar fronts with competing answers;
 - abbreviation use, classification, and introduction order;
 - questions that depend on source artifacts or learning context, especially wording such as "in this lecture", "in the presentation", "on the slide", "in the diagram", "shown in the diagram", "shown in the lecture", "according to the lecture", or "according to the diagram".
 
@@ -137,6 +145,9 @@ Create an internal mapping from each candidate card or concept to:
 - depth of examination;
 - conceptual importance;
 - overlap with other cards.
+- retrieval operation: recall, explain, compare, compute, choose, diagnose, model, or evaluate;
+- card-shape risks: ambiguous cue, unbounded set, compound prompt, long prose, answer-type mismatch, image-only answer, or interference cluster;
+- mapped review time, lapse count, or ease when trustworthy telemetry is available.
 
 Use the linked task wording and solution context to distinguish genuine matches from superficial term occurrences.
 
@@ -164,9 +175,9 @@ Score each card using these factors:
 
 #### Card quality
 
-- High: clear, atomic, accurate, and directly answerable.
-- Medium: useful but needs tightening or merging.
-- Low: ambiguous, redundant, overloaded, or unsupported.
+- High: unique cue, one retrieval operation, concise verbalizable answer, binary grading criterion, and exam-appropriate operation.
+- Medium: valuable but needs splitting, tightening, contrast, or type repair.
+- Low: ambiguous, redundant, overloaded, unsupported, image-only, or strongly confusable with another card.
 
 Prioritize cards with strong combined value. A card absent from the index may still be retained when it is foundational or needed for broad coverage.
 
@@ -190,8 +201,24 @@ When merging:
 - verify the result against `presentation.pdf`;
 - preserve or correct the slide reference.
 - do not merge away the only required introduction card for an abbreviation used by later cards.
+- do not merge cards when the result requires more than one independent retrieval operation;
+- do not merge merely to reach the target count.
 
-### 8. Remove Low-Value Cards
+### 8. Transform High-Cost Card Shapes
+
+Repair valuable but inefficient cards before considering deletion:
+
+- **Large unordered set:** group it semantically into sets of at most three, invert it into cards keyed by distinguishing properties, or retain only a count-and-group scaffold.
+- **Long process or architecture:** create cards for diagnostic links or stages; retain a full-chain card only when reproducing the complete chain is exam-relevant.
+- **Parallel siblings:** ask which concept has a distinguishing property or create an explicit contrast instead of repeating nearly identical stems.
+- **Vague cue:** state the framework, requested answer type, count, or relationship that makes one answer uniquely correct.
+- **Compound prompt:** split it so each resulting card has one pass criterion.
+- **Type mismatch:** make the text answer supply the requested formula, name, mechanism, cause, or trade-off.
+- **Image-only answer:** add the minimum verbalizable text answer; use media only as support.
+
+Treat more than three unordered items or roughly 25 substantive answer words as repair triggers, not automatic failures. Preserve coherent formulas, contrast pairs, and short ordered chunks.
+
+### 9. Remove Low-Value Cards
 
 Remove cards that are:
 
@@ -206,13 +233,16 @@ Remove cards that are:
 
 Do not remove a card solely because its concept does not occur in the index.
 
-### 9. Repair Retained Cards
+### 10. Repair Retained Cards
 
 For every retained or merged card:
 
 - verify the answer against `presentation.pdf`;
 - correct terminology and grammar;
 - keep the question unambiguous;
+- make the expected answer type explicit and ensure a knowledgeable learner cannot give a different correct answer;
+- replace load-bearing vague verbs such as identify, formalize, synthesize, define, play a role, is used for, and is important with the precise tested relationship;
+- require one grading decision and a verbalizable text answer per card;
 - rewrite questions so they are source-artifact independent and do not mention standalone source-artifact words such as lecture, presentation, slide, deck, figure, or diagram, or phrases such as shown, mentioned, named, or highlighted there; use whole-word matching so terms like representation are allowed;
 - keep the answer concise but complete;
 - retain useful context needed to distinguish similar concepts;
@@ -222,7 +252,11 @@ For every retained or merged card:
 
 Do not silently introduce claims that cannot be traced to the presentation.
 
-### 10. Check Coverage and Count
+When linked exam tasks require application, preserve or create at least one card with the same supported operation: compute, choose, diagnose, model, explain, or evaluate. Exam material may determine the task shape but not introduce unsupported course facts.
+
+If trustworthy review telemetry is available, inspect cards with at least three lapses or mature median review time above roughly 15 seconds. Rewrite or remove them when card shape causes the difficulty; do not delete them automatically.
+
+### 11. Check Coverage and Count
 
 After the first reduction pass:
 
@@ -234,9 +268,11 @@ After the first reduction pass:
 6. Review underrepresented topics for harmful gaps.
 7. Scan every question for forbidden source-artifact wording using whole-word matching, and repair any match before finalizing. Do not flag substrings inside valid technical terms; for example, representation is allowed.
 8. Validate abbreviation classification and learning order.
-9. Adjust toward the target of roughly 60-70 cards.
+9. Confirm that substantively examined application-level concepts use the relevant retrieval operation where supported.
+10. Run the bundled script by its resolved skill path: `python3 <anki-card-finetuning-skill-directory>/scripts/audit_cards.py anki.txt --min-cards 60 --max-cards 70`. Repair every structural finding, inspect all warnings, and justify internally any safe exception.
+11. Adjust toward the target of roughly 60-70 cards without sacrificing quality or required coverage.
 
-### 11. Preserve Order and Renumber Sequentially
+### 12. Preserve Order and Renumber Sequentially
 
 Keep cards in their existing conceptual or slide order.
 
@@ -277,8 +313,11 @@ After editing, report:
 - number of removed cards;
 - number of merged card groups;
 - number of newly added cards, if any;
+- number of repaired cues, split list or process cards, and resolved collision groups;
+- number of retained or added application cards;
 - whether the exam index and linked Markdown were used successfully;
 - whether the source-artifact wording scan passed after repairs;
+- whether the audit script passed and which warnings, if any, were deliberately retained;
 - any important coverage decisions;
 - any limitations such as missing index entries, broken links, or incomplete task or solution Markdown.
 
@@ -292,3 +331,4 @@ After editing, report:
 - Do not discard important presentation topics merely because they are absent from the index.
 - Do not change the established Anki file format.
 - Do not leave gaps or decimal card numbers in the final deck; final card numbers must be sequential integers.
+- Do not use the 60-70 target to justify a compound card, an unbounded list, or a cue collision.
