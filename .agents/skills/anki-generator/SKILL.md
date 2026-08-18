@@ -28,6 +28,8 @@ This includes:
 - mechanisms
 - relationships between concepts
 - central ideas or principles behind concepts
+- which named topics, concepts, models, methods, architectures, metrics, and processes the slides newly introduce;
+- prerequisite relationships among newly introduced concepts.
 
 ### Rules
 
@@ -83,10 +85,30 @@ Avoid:
 - trivial descriptive details
 - non-essential facts
 
+### Concept Introduction Order
+
+For every newly introduced named topic, concept, model, method, architecture, metric, or process that receives cards:
+
+1. Create exactly one introduction card before every detailed card about it:
+   - Front: `What is <canonical concept name>?`
+   - Back: `<brief defining answer>.`
+2. Use the concrete canonical name on the front. When a short name is ambiguous, use its complete concept name, such as `Strategy pattern`, without adding source-artifact context.
+3. Define the concept in one concise sentence by stating its category and distinguishing idea. Do not turn the introduction answer into a property list.
+4. A definition may use terminology introduced by an earlier card. Relational definitions are encouraged when accurate, for example:
+   - `An extension of <earlier concept> that adds <new feature>.`
+   - `A variant of <earlier concept> that improves <property> through <mechanism>.`
+5. Order prerequisite introduction cards before dependent introduction cards. Use slide order when there is no dependency.
+6. Place finer-grained Why, Which, How, comparison, mechanism, trade-off, and application cards after the introduction card.
+
+Treat a concept as newly introduced only when the slides name and explain it. Treat an incidental name or an unexplained prerequisite as assumed knowledge and do not synthesize an introduction card for it.
+
+The introduction definition and later detail cards form an intentional scaffold, not redundancy. Each detail card must test a distinct property, mechanism, reason, distinction, or application rather than restating the definition.
+
 ### Strict Constraints
 
 #### Abbreviation Handling
 
+- Treat abbreviation introduction as a special case of the concept-introduction rule above.
 - Use only abbreviations that appear in the slides.
 - Classify each abbreviation by how the slides use it:
   1. **Topic-introduced abbreviation:** If the slides introduce the abbreviation as a concept, model, or method and provide its meaning, create an introduction card at the first relevant position:
@@ -96,6 +118,7 @@ Avoid:
   2. **Assumed-known abbreviation:** If the slides use an abbreviation without introducing its topic or expansion, treat it as prior knowledge and reuse it without expansion. Do not create an expansion-only card. Examples can include RGB, API, and LLM when the slides merely reuse them.
 - Do not infer or invent an expansion that the slides do not provide.
 - Place every abbreviation-introduction card before later cards that use that abbreviation.
+- When the abbreviation and full term name the same newly introduced concept, create one introduction card using the abbreviation form specified above, not a second `What is <full term>?` card.
 
 #### Examples and Application
 
@@ -145,13 +168,13 @@ Each card must satisfy:
 3. Typed answer
    Signal whether the answer is a name, count, formula, mechanism, consequence, comparison, or trade-off. A formula question must include the formula in text; a why-question must state the cause.
 4. Diagnostic verb
-   Use a verb that constrains the answer. Replace load-bearing uses of vague verbs such as identify, formalize, synthesize, define, play a role, is used for, and is important with the precise relationship being tested.
+   Use `What is <canonical concept name>?` for required introduction cards. For detail cards, use a verb that constrains the answer. Replace load-bearing uses of vague verbs such as identify, formalize, synthesize, define, play a role, is used for, and is important with the precise relationship being tested.
 5. Minimal, verbalizable answer
    Put the shortest complete answer in text. Images may illustrate an answer but must not carry it alone.
 6. Bounded sets and sequences
    For more than three unordered items, use semantic groups of at most three, invert into discriminating member cards, or keep only a count-and-group scaffold. For a long pipeline, teach local links first; keep a full-chain card only when reproducing the chain is itself useful.
 7. Independence and active recall
-   Make the card understandable without other cards or the slides, and require recall rather than recognition.
+   Make the cue understandable without other cards or the slides, and require recall rather than recognition. The answer may use previously introduced terminology but must not depend on a concept introduced later.
 8. Nonredundancy and interference
    Avoid duplicate facts, identical backs, and parallel cues that differ only in a small label. Prefer explicit contrasts or wording whose differing terms determine the answer.
 9. Source-Artifact Independence
@@ -255,6 +278,14 @@ Validate abbreviation handling:
 - later cards use the shorthand without repeatedly expanding it;
 - assumed-known abbreviations are not expanded or given synthetic introduction cards;
 - no expansion was inferred beyond the slides.
+
+Validate concept introduction order:
+
+- every retained newly introduced concept has exactly one earlier `What is <canonical concept name>?` card;
+- each introduction answer is a brief definition rather than a list of later details;
+- every newly introduced concept referenced in an answer has already been introduced;
+- detailed cards follow their introduction card and test knowledge beyond its minimal definition;
+- assumed-known or merely incidental terms did not receive synthetic introduction cards.
 
 Validate cue and answer quality:
 

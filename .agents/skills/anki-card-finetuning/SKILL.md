@@ -42,11 +42,24 @@ Preserve the existing card syntax and ordering conventions. After the final card
 7. Merge overlap before deleting distinct concepts.
 8. Keep cards atomic enough to review effectively.
 9. Do not add facts found only in the exam corpus.
-10. Preserve abbreviation learning order: retain or create one introduction card for each topic-introduced abbreviation, then use its shorthand consistently.
+10. Preserve concept learning order: retain or create one introduction card for each retained newly introduced concept, including topic-introduced abbreviations, before its detail cards.
 11. Optimize one retrieval operation per card, not the smallest possible fact fragment.
 12. Match the card operation to the exam operation when the presentation supports it.
 
-## Abbreviation Handling
+## Concept and Abbreviation Introduction
+
+For every retained named topic, concept, model, method, architecture, metric, or process that the slides newly introduce:
+
+- Retain or create exactly one first card with front `What is <canonical concept name>?`.
+- Use a one-sentence answer that states the concept's category and distinguishing idea without listing its later details.
+- Allow the answer to refer to concepts introduced earlier, including relational definitions such as `An extension of <earlier concept> that adds <feature>.`
+- Place prerequisite introduction cards before dependent introductions, then place finer-grained Why, Which, How, comparison, mechanism, trade-off, and application cards afterward.
+- Treat the minimal definition and distinct detail cards as an intentional scaffold, not redundancy.
+- Do not create introduction cards for incidental names or prerequisites the slides use without explaining.
+
+If all cards for a concept are intentionally removed, its introduction card may also be removed. If any detail card remains, preserve or restore its introduction card even when this causes a modest count overrun; remove lower-value detail cards before required introductions.
+
+Treat abbreviation introduction as a special case of this rule:
 
 - Use only abbreviations that appear in the slides.
 - Classify each abbreviation from the way the slides present it:
@@ -57,6 +70,7 @@ Preserve the existing card syntax and ordering conventions. After the final card
   2. **Assumed-known abbreviation:** If the slides use an abbreviation without introducing its topic or expansion, treat it as prior knowledge and reuse it without expansion. Do not create an expansion-only card. Examples can include RGB, API, and LLM when the slides merely reuse them.
 - Do not infer or invent an expansion that the slides do not provide.
 - Do not remove the only required introduction card when later cards depend on that abbreviation.
+- When the abbreviation and full term name the same concept, retain one abbreviation introduction card rather than a duplicate full-term introduction card.
 
 ## Workflow
 
@@ -76,6 +90,7 @@ Read all of `anki.txt` and determine:
 - formula, mechanism, or comparison prompts whose answers have the wrong type;
 - empty or image-only text backs;
 - identical normalized answers and highly similar fronts with competing answers;
+- newly introduced concepts, their introduction cards, prerequisite order, and any detail cards lacking an earlier introduction;
 - abbreviation use, classification, and introduction order;
 - questions that depend on source artifacts or learning context, especially wording such as "in this lecture", "in the presentation", "on the slide", "in the diagram", "shown in the diagram", "shown in the lecture", "according to the lecture", or "according to the diagram".
 
@@ -145,6 +160,7 @@ Create an internal mapping from each candidate card or concept to:
 - depth of examination;
 - conceptual importance;
 - overlap with other cards.
+- whether the card is a required concept introduction or a detail card in that concept's cluster;
 - retrieval operation: recall, explain, compare, compute, choose, diagnose, model, or evaluate;
 - card-shape risks: ambiguous cue, unbounded set, compound prompt, long prose, answer-type mismatch, image-only answer, or interference cluster;
 - mapped review time, lapse count, or ease when trustworthy telemetry is available.
@@ -169,7 +185,7 @@ Score each card using these factors:
 
 #### Coverage value
 
-- High: the card is the only good representative of a major course area.
+- High: the card is a required introduction for a retained concept or the only good representative of a major course area.
 - Medium: it supports a covered area without being unique.
 - Low: several retained cards already test the same knowledge.
 
@@ -201,6 +217,8 @@ When merging:
 - verify the result against `presentation.pdf`;
 - preserve or correct the slide reference.
 - do not merge away the only required introduction card for an abbreviation used by later cards.
+- do not merge a required `What is ...?` introduction into a detail card;
+- do not treat minimal definition/detail overlap as redundancy when the detail card tests a distinct operation;
 - do not merge cards when the result requires more than one independent retrieval operation;
 - do not merge merely to reach the target count.
 
@@ -212,6 +230,7 @@ Repair valuable but inefficient cards before considering deletion:
 - **Long process or architecture:** create cards for diagnostic links or stages; retain a full-chain card only when reproducing the complete chain is exam-relevant.
 - **Parallel siblings:** ask which concept has a distinguishing property or create an explicit contrast instead of repeating nearly identical stems.
 - **Vague cue:** state the framework, requested answer type, count, or relationship that makes one answer uniquely correct.
+- **Missing introduction:** add `What is <canonical concept name>?` before retained detail cards and define the concept briefly using only earlier introduced or assumed-known terminology.
 - **Compound prompt:** split it so each resulting card has one pass criterion.
 - **Type mismatch:** make the text answer supply the requested formula, name, mechanism, cause, or trade-off.
 - **Image-only answer:** add the minimum verbalizable text answer; use media only as support.
@@ -241,12 +260,12 @@ For every retained or merged card:
 - correct terminology and grammar;
 - keep the question unambiguous;
 - make the expected answer type explicit and ensure a knowledgeable learner cannot give a different correct answer;
-- replace load-bearing vague verbs such as identify, formalize, synthesize, define, play a role, is used for, and is important with the precise tested relationship;
+- preserve `What is <canonical concept name>?` for introduction cards; on detail cards, replace load-bearing vague verbs such as identify, formalize, synthesize, define, play a role, is used for, and is important with the precise tested relationship;
 - require one grading decision and a verbalizable text answer per card;
 - rewrite questions so they are source-artifact independent and do not mention standalone source-artifact words such as lecture, presentation, slide, deck, figure, or diagram, or phrases such as shown, mentioned, named, or highlighted there; use whole-word matching so terms like representation are allowed;
 - keep the answer concise but complete;
 - retain useful context needed to distinguish similar concepts;
-- apply the abbreviation policy and ensure each required introduction card precedes later shorthand use;
+- apply the concept and abbreviation introduction policy, ensure each required introduction precedes its detail cards, and remove forward references to concepts introduced later;
 - verify the slide reference;
 - preserve the established Anki formatting.
 
@@ -267,10 +286,11 @@ After the first reduction pass:
 5. Review overrepresented topics for further consolidation.
 6. Review underrepresented topics for harmful gaps.
 7. Scan every question for forbidden source-artifact wording using whole-word matching, and repair any match before finalizing. Do not flag substrings inside valid technical terms; for example, representation is allowed.
-8. Validate abbreviation classification and learning order.
-9. Confirm that substantively examined application-level concepts use the relevant retrieval operation where supported.
-10. Run the bundled script by its resolved skill path: `python3 <anki-card-finetuning-skill-directory>/scripts/audit_cards.py anki.txt --min-cards 60 --max-cards 70`. Repair every structural finding, inspect all warnings, and justify internally any safe exception.
-11. Adjust toward the target of roughly 60-70 cards without sacrificing quality or required coverage.
+8. Validate concept and abbreviation classification, introduction coverage, dependency order, and learning order.
+9. Confirm that every retained detail-card cluster has exactly one earlier `What is ...?` introduction and that its definition does not merely duplicate a detail card.
+10. Confirm that substantively examined application-level concepts use the relevant retrieval operation where supported.
+11. Run the bundled script by its resolved skill path: `python3 <anki-card-finetuning-skill-directory>/scripts/audit_cards.py anki.txt --min-cards 60 --max-cards 70`. Repair every structural finding, inspect all warnings, and justify internally any safe exception.
+12. Adjust toward the target of roughly 60-70 cards without removing required introduction cards or sacrificing quality and coverage.
 
 ### 12. Preserve Order and Renumber Sequentially
 
@@ -279,6 +299,7 @@ Keep cards in their existing conceptual or slide order.
 - During selection and merging, you may keep original card numbers temporarily to track provenance.
 - Before writing the final `anki.txt`, renumber all cards sequentially as `1. Card`, `2. Card`, `3. Card`, and so on without gaps.
 - Place inserted cards in the correct chronological position.
+- Order concept prerequisites before dependent introductions and place each introduction before its detail cards.
 - Do not append inserted cards arbitrarily to the end.
 
 New cards should be rare during finetuning and should only repair a clear coverage gap supported by the presentation.
@@ -315,6 +336,7 @@ After editing, report:
 - number of newly added cards, if any;
 - number of repaired cues, split list or process cards, and resolved collision groups;
 - number of retained or added application cards;
+- number of concept-introduction cards retained, restored, newly added, and removed with an excluded concept;
 - whether the exam index and linked Markdown were used successfully;
 - whether the source-artifact wording scan passed after repairs;
 - whether the audit script passed and which warnings, if any, were deliberately retained;
@@ -328,6 +350,7 @@ After editing, report:
 - Do not treat every indexed term as equally important.
 - Do not create cards for exam topics unsupported by `presentation.pdf`.
 - Do not invent abbreviation expansions absent from the slides.
+- Do not remove the required introduction card while retaining detail cards for that concept.
 - Do not discard important presentation topics merely because they are absent from the index.
 - Do not change the established Anki file format.
 - Do not leave gaps or decimal card numbers in the final deck; final card numbers must be sequential integers.
