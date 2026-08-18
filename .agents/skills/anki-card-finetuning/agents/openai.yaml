@@ -1,4 +1,4 @@
 interface:
   display_name: "Anki Card Finetuning"
-  short_description: "Refine Anki decks for exam relevance"
-  default_prompt: "Use $anki-card-finetuning to refine anki.txt into a compact, exam-focused deck."
+  short_description: "Size and refine exam-focused Anki decks"
+  default_prompt: "Use $anki-card-finetuning to analyze anki.txt and the course sources, propose a target card range for my approval, then refine the deck to my selected range or exact count."

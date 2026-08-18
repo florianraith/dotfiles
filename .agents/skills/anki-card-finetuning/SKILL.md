@@ -1,6 +1,6 @@
 ---
 name: anki-card-finetuning
-description: Refine an overgenerated anki.txt into roughly 60-70 exam-focused, efficiently reviewable cards by verifying presentation content, resolving exam references, repairing cue and interference problems, and matching card operations to assessed tasks.
+description: Analyze and refine an overgenerated anki.txt into an exam-focused, efficiently reviewable deck by proposing a source-specific target card range for user approval, verifying presentation content, resolving exam references, repairing cue and interference problems, and matching card operations to assessed tasks.
 ---
 
 # Anki Card Finetuning
@@ -25,9 +25,9 @@ If `./Exam/Parsed/index.md` or its linked Markdown files do not exist, use the c
 
 ## Output
 
-Rewrite `./anki.txt` in place unless the user requests another output path.
+First produce a target-range proposal without modifying `anki.txt`. Rewrite `./anki.txt` in place only after the user explicitly approves that range, supplies a replacement range, or specifies an exact target count.
 
-The final file should normally contain about 60-70 cards. Treat this as a target range rather than an absolute rule: preserve a few extra cards if removing them would create an important coverage gap, and use fewer cards when the source material does not justify more.
+Treat the user-selected target as authoritative. Finish within an approved range, or at the exact count when the user selects one. If satisfying it would require removing required coverage or creating low-quality cards, stop and ask the user to revise the target instead of silently deviating.
 
 Preserve the existing card syntax and ordering conventions. After the final card selection is complete, renumber all cards sequentially from 1 without gaps.
 
@@ -45,6 +45,7 @@ Preserve the existing card syntax and ordering conventions. After the final card
 10. Preserve concept learning order: retain or create one introduction card for each retained newly introduced concept, including topic-introduced abbreviations, before its detail cards.
 11. Optimize one retrieval operation per card, not the smallest possible fact fragment.
 12. Match the card operation to the exam operation when the presentation supports it.
+13. Derive the target range from the current source and obtain explicit user approval before changing the deck.
 
 ## Concept and Abbreviation Introduction
 
@@ -148,7 +149,31 @@ Determine:
 
 Do not count multiple index entries pointing to the same task as independent evidence.
 
-### 5. Build a Relevance Map
+### 5. Propose a Target Range and Get Approval
+
+Keep `anki.txt` unchanged while sizing the deck. Derive a defensible range by triangulating all four signals below rather than applying a universal card count:
+
+1. **Slide volume:** Count total slides and content-bearing slides. Exclude title pages, agendas, section dividers, bibliographies, near-empty slides, and repeated administrative material.
+2. **Content complexity:** Classify content-bearing slides or coherent slide groups as low, medium, or high complexity. Low-complexity material presents one simple definition or example; medium-complexity material presents several related claims, a comparison, or a short process; high-complexity material presents formulas, multi-stage mechanisms, dense architectures, interacting concepts, or application procedures. Account for concepts developed across several slides as one unit instead of multiplying cards by slide count.
+3. **Existing-deck yield:** Start from the current card count, then estimate how many distinct supported retrieval operations remain after obvious duplicates, unsupported trivia, and redundant fragments are removed and necessary introductions, splits, or application cards are added. This is an estimate only; do not rewrite cards to obtain it.
+4. **Exam coverage:** Count distinct exams and substantive tasks, the major presentation areas they cover, recurring concepts, and the assessed operations they require. Increase space for independently recurring or application-heavy concepts; avoid increasing it for repeated index links to the same task or incidental mentions.
+
+Establish a **coverage floor** from the required concept introductions, at least one strong representative for each major course area, and distinct exam-assessed operations that need separate cards. Establish a **useful ceiling** from the supported, non-redundant retrieval operations justified by the slides and exam evidence. Reconcile these bounds with slide volume, complexity, and the current deck's estimated yield. Prefer a reasonably narrow range that communicates a real study-load choice; widen it only when missing or ambiguous source material creates genuine uncertainty.
+
+Present the proposal to the user with:
+
+- current card count;
+- total and content-bearing slide counts;
+- complexity profile and the main reasons for it;
+- exam corpus size, recurrence, breadth, and application depth;
+- estimated coverage floor and useful ceiling;
+- proposed minimum and maximum card counts;
+- the main trade-off at the lower versus upper end;
+- any uncertainty or missing inputs that materially affect the estimate.
+
+Ask the user to approve the proposed range, provide a replacement range, or specify an exact target card count based on the proposal. Stop after asking: do not merge, remove, add, repair, renumber, or write any card until a subsequent user message explicitly selects a target. A request to run this skill is not itself approval of the proposed range. Record the selection as the **approved target** and use it throughout the remaining workflow. For an exact target, set the approved minimum and maximum to that same count.
+
+### 6. Build a Relevance Map
 
 Create an internal mapping from each candidate card or concept to:
 
@@ -167,7 +192,7 @@ Create an internal mapping from each candidate card or concept to:
 
 Use the linked task wording and solution context to distinguish genuine matches from superficial term occurrences.
 
-### 6. Score Candidate Cards
+### 7. Score Candidate Cards
 
 Score each card using these factors:
 
@@ -197,7 +222,7 @@ Score each card using these factors:
 
 Prioritize cards with strong combined value. A card absent from the index may still be retained when it is foundational or needed for broad coverage.
 
-### 7. Merge Redundant Cards
+### 8. Merge Redundant Cards
 
 Before deleting cards, look for opportunities to merge:
 
@@ -222,7 +247,7 @@ When merging:
 - do not merge cards when the result requires more than one independent retrieval operation;
 - do not merge merely to reach the target count.
 
-### 8. Transform High-Cost Card Shapes
+### 9. Transform High-Cost Card Shapes
 
 Repair valuable but inefficient cards before considering deletion:
 
@@ -237,7 +262,7 @@ Repair valuable but inefficient cards before considering deletion:
 
 Treat more than three unordered items or roughly 25 substantive answer words as repair triggers, not automatic failures. Preserve coherent formulas, contrast pairs, and short ordered chunks.
 
-### 9. Remove Low-Value Cards
+### 10. Remove Low-Value Cards
 
 Remove cards that are:
 
@@ -252,7 +277,7 @@ Remove cards that are:
 
 Do not remove a card solely because its concept does not occur in the index.
 
-### 10. Repair Retained Cards
+### 11. Repair Retained Cards
 
 For every retained or merged card:
 
@@ -275,7 +300,7 @@ When linked exam tasks require application, preserve or create at least one card
 
 If trustworthy review telemetry is available, inspect cards with at least three lapses or mature median review time above roughly 15 seconds. Rewrite or remove them when card shape causes the difficulty; do not delete them automatically.
 
-### 11. Check Coverage and Count
+### 12. Check Coverage and Count
 
 After the first reduction pass:
 
@@ -289,10 +314,10 @@ After the first reduction pass:
 8. Validate concept and abbreviation classification, introduction coverage, dependency order, and learning order.
 9. Confirm that every retained detail-card cluster has exactly one earlier `What is ...?` introduction and that its definition does not merely duplicate a detail card.
 10. Confirm that substantively examined application-level concepts use the relevant retrieval operation where supported.
-11. Run the bundled script by its resolved skill path: `python3 <anki-card-finetuning-skill-directory>/scripts/audit_cards.py anki.txt --min-cards 60 --max-cards 70`. Repair every structural finding, inspect all warnings, and justify internally any safe exception.
-12. Adjust toward the target of roughly 60-70 cards without removing required introduction cards or sacrificing quality and coverage.
+11. Run the bundled script by its resolved skill path, substituting the approved bounds: `python3 <anki-card-finetuning-skill-directory>/scripts/audit_cards.py anki.txt --min-cards <approved-min> --max-cards <approved-max>`. For an exact target, pass the same value to both options. Repair every structural finding, inspect all warnings, and justify internally any safe exception.
+12. Adjust to the approved target without removing required introduction cards or sacrificing quality and coverage. If those requirements conflict, pause and request a revised target.
 
-### 12. Preserve Order and Renumber Sequentially
+### 13. Preserve Order and Renumber Sequentially
 
 Keep cards in their existing conceptual or slide order.
 
@@ -329,6 +354,7 @@ These expansions are for retrieval only. Keep a match only when the linked task 
 
 After editing, report:
 
+- proposed target range and the user-selected range or exact count;
 - original card count;
 - final card count;
 - number of removed cards;
@@ -354,4 +380,5 @@ After editing, report:
 - Do not discard important presentation topics merely because they are absent from the index.
 - Do not change the established Anki file format.
 - Do not leave gaps or decimal card numbers in the final deck; final card numbers must be sequential integers.
-- Do not use the 60-70 target to justify a compound card, an unbounded list, or a cue collision.
+- Do not edit `anki.txt` before the user explicitly selects a proposed range, replacement range, or exact count.
+- Do not use the approved target to justify a compound card, an unbounded list, or a cue collision.
