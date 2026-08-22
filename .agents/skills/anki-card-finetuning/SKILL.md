@@ -19,7 +19,6 @@ Read these files before editing:
 - `./presentation.pdf`: the source material used to verify terminology, claims, and slide references.
 - `./Exam/Parsed/index.md`: the topic and technical-term index for the parsed exams.
 - Markdown files linked from `./Exam/Parsed/index.md`: the full exam tasks, subtasks, and solutions needed to understand each indexed reference.
-- Optional review telemetry or a deck review supplied by the user: use only metrics that can be mapped reliably to individual cards.
 
 If `./Exam/Parsed/index.md` or its linked Markdown files do not exist, use the corresponding exam and solution PDFs under `./Exam/` as a fallback.
 
@@ -188,7 +187,6 @@ Create an internal mapping from each candidate card or concept to:
 - whether the card is a required concept introduction or a detail card in that concept's cluster;
 - retrieval operation: recall, explain, compare, compute, choose, diagnose, model, or evaluate;
 - card-shape risks: ambiguous cue, unbounded set, compound prompt, long prose, answer-type mismatch, image-only answer, or interference cluster;
-- mapped review time, lapse count, or ease when trustworthy telemetry is available.
 
 Use the linked task wording and solution context to distinguish genuine matches from superficial term occurrences.
 
@@ -297,8 +295,6 @@ For every retained or merged card:
 Do not silently introduce claims that cannot be traced to the presentation.
 
 When linked exam tasks require application, preserve or create at least one card with the same supported operation: compute, choose, diagnose, model, explain, or evaluate. Exam material may determine the task shape but not introduce unsupported course facts.
-
-If trustworthy review telemetry is available, inspect cards with at least three lapses or mature median review time above roughly 15 seconds. Rewrite or remove them when card shape causes the difficulty; do not delete them automatically.
 
 ### 12. Check Coverage and Count
 

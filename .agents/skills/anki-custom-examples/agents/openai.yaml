@@ -1,0 +1,4 @@
+interface:
+  display_name: "Anki Custom Examples"
+  short_description: "Add clearly marked custom examples to Anki cards"
+  default_prompt: "Use $anki-custom-examples to add helpful custom examples to the existing anki.txt deck."
