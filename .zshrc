@@ -98,7 +98,15 @@ function commit() {
       # Get diff with size limit, include stat summary for context
        recent_messages=$("${git_cmd[@]}" log -5 --pretty=format:%s 2>/dev/null)
        diff_input=$(printf "=== Latest 5 commit messages (from: git log -5 --pretty=format:%%s) ===\n%s\n\n=== Summary ===\n" "$recent_messages" && "${git_cmd[@]}" diff --cached --stat && printf "\n=== Diff (truncated if large) ===\n" && "${git_cmd[@]}" diff --cached | head -c 50000)
-       commitMessage=$(echo "$diff_input" | claude -p "Use the latest 5 commit messages included below as examples and match the new commit message to the same format/style. Write a single-line short commit message for this diff. Output ONLY the message, no quotes, no explanation, no markdown.")
+       commitMessage=$(
+         printf '%s' "$diff_input" |
+           codex exec \
+          -m gpt-5.6-luna \
+           --sandbox read-only \
+           --skip-git-repo-check \
+           "Use the latest 5 commit messages included in the provided input as examples and match the new commit message to the same format/style. Write a single-line short commit message for the staged diff. Output ONLY the message, no quotes, no explanation, no markdown." \
+           2>/dev/null
+         )
 
      # Stop spinner and clear line
      trap - INT
