@@ -194,6 +194,7 @@ if [ -f '/private/etc/google-cloud-sdk/completion.zsh.inc' ]; then . '/private/e
 export GOOGLE_APPLICATION_CREDENTIALS='/Users/florian/.config/gcloud/application_default_credentials.json'
 
 # Set up fzf key bindings and fuzzy completion
+export FZF_COMPLETION_OPTS='--ignore-case'
 eval "$(fzf --zsh)"
 
 if [ -f "$HOME/.secrets.zsh" ]; then source "$HOME/.secrets.zsh"; fi
