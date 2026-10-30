@@ -1,0 +1,11 @@
+*.gig.*
+.DS_Store
+.idea
+.vscode
+.coverage
+/secret
+/resources/js/secret.js
+/public/vendor.js.map
+.codex/skills/.system
+
+**/.claude/settings.local.json
