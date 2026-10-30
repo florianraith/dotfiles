@@ -1,0 +1,38 @@
+[user]
+	name = Florian Raith
+	email = florianraith00@gmail.com
+
+[includeIf "gitdir:~/Work/zewotherm/**"]
+  path = ~/Work/zewotherm/.gitconfig
+
+[url "git@github.com:"]
+	insteadOf = https://github.com/
+
+[core]
+	excludesFile = ~/.gitignore
+  pager = delta
+	autocrlf = input
+
+[fetch]
+	prune = true
+
+[interactive]
+	diffFilter = delta
+
+[delta]
+    navigate = true
+    line-numbers = true
+    side-by-side = false
+    syntax-theme = Dracula
+    features = decorations
+
+[delta "decorations"]
+    commit-decoration-style = bold yellow box
+    file-decoration-style = bold blue
+    hunk-header-decoration-style = cyan box
+
+[diff]
+    colorMoved = default
+
+[alias]
+	ocmmit = commit
