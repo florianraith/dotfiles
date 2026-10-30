@@ -185,14 +185,6 @@ ssh-add --apple-use-keychain ~/.ssh/id_rsa 2>/dev/null
 
 [ -f "/Users/florian/.ghcup/env" ] && source "/Users/florian/.ghcup/env" # ghcup-env
 
-# The next line updates PATH for the Google Cloud SDK.
-if [ -f '/private/etc/google-cloud-sdk/path.zsh.inc' ]; then . '/private/etc/google-cloud-sdk/path.zsh.inc'; fi
-
-# The next line enables shell command completion for gcloud.
-if [ -f '/private/etc/google-cloud-sdk/completion.zsh.inc' ]; then . '/private/etc/google-cloud-sdk/completion.zsh.inc'; fi
-
-export GOOGLE_APPLICATION_CREDENTIALS='/Users/florian/.config/gcloud/application_default_credentials.json'
-
 # Set up fzf key bindings and fuzzy completion
 export FZF_COMPLETION_OPTS='--ignore-case'
 eval "$(fzf --zsh)"
@@ -202,17 +194,3 @@ if [ -f "$HOME/.secrets.zsh" ]; then source "$HOME/.secrets.zsh"; fi
 # add unversioned python symlinks to PATH
 export PATH="$(brew --prefix python)/libexec/bin:$PATH"
 
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/opt/homebrew/Caskroom/miniconda/base/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "/opt/homebrew/Caskroom/miniconda/base/etc/profile.d/conda.sh" ]; then
-        . "/opt/homebrew/Caskroom/miniconda/base/etc/profile.d/conda.sh"
-    else
-        export PATH="/opt/homebrew/Caskroom/miniconda/base/bin:$PATH"
-    fi
-fi
-unset __conda_setup
-# <<< conda initialize <<<
