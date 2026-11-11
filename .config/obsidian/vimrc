@@ -1,0 +1,20 @@
+nmap gd gf
+nmap gx gf
+
+set clipboard=unnamedplus
+
+nmap j gj
+nmap k gk
+
+" Go back and forward with Ctrl+O and Ctrl+I
+" (make sure to remove default Obsidian shortcuts for these to work)
+exmap back obcommand app:go-back
+nmap <C-o> :back<CR>
+exmap forward obcommand app:go-forward
+nmap <C-i> :forward<CR>
+
+nmap <Space><Space> :nohl<CR>
+" Shift+K previews the note behind the link under the cursor
+" (requires "Support JS commands" in the Vimrc Support plugin settings)
+exmap previewLink jsfile .obsidian/vimrc-preview-link.js
+nmap K :previewLink<CR>
