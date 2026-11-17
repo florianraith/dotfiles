@@ -10,6 +10,8 @@ export SAVEHIST=100000
 export LC_CTYPE=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
+export DOCKER_CLI_HINTS=false
+
 plugins=(
   zsh-syntax-highlighting
   zsh-autosuggestions
@@ -38,14 +40,16 @@ if [[ $- == *i* ]]; then
     directories=(
       ~/Documents
       ~/Vaults
+      ~/Pictures
       ~/Work 
-      ~/Work/zewotherm 
-      ~/Work/pluto 
-      ~/Work/projects 
-      ~/Work/games 
-      ~/Work/lib 
-      ~/Work/uni 
-      ~/Work/etc 
+      ~/Work/zewotherm
+      ~/Work/pluto
+      ~/Work/projects
+      ~/Work/mc
+      ~/Work/uni
+      ~/Work/scratch
+      ~/Work/external
+      ~/Work/archive
       ~/.config 
       ~/ 
       ~/Uni
