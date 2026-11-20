@@ -117,6 +117,16 @@
       "skillFolderHash": "cb6e53477eaf04e6daeca22feacb85f9ce20d40c",
       "installedAt": "2026-09-07T12:02:25.067Z",
       "updatedAt": "2026-09-07T12:02:25.067Z"
+    },
+    "security-audit": {
+      "source": "cloudflare/security-audit-skill",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/cloudflare/security-audit-skill.git",
+      "commit": "c1c8a8c1471069fb0e188eeaff69b8e8db6564a8",
+      "skillPath": "skills/security-audit/SKILL.md",
+      "skillFolderHash": "ccbc33ed119b28c3ef7b44a7e2081ab191ad63af",
+      "installedAt": "2026-11-17T11:20:44.107Z",
+      "updatedAt": "2026-11-17T11:20:44.107Z"
     }
   },
   "dismissed": {
@@ -124,16 +134,17 @@
   },
   "lastSelectedAgents": [
     "amp",
-    "antigravity",
-    "antigravity-cli",
     "cline",
     "codex",
     "cursor",
-    "deepagents",
+    "droid",
+    "fx",
     "gemini-cli",
     "github-copilot",
+    "kilo",
     "kimi-code-cli",
     "opencode",
+    "pi",
     "warp",
     "zed",
     "claude-code"

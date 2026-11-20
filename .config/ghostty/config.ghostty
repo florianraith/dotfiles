@@ -9,10 +9,13 @@ font-feature = -dlig
 font-family = MesloLGS NF
 
 # Install terminfo on SSH hosts, fall back to xterm-256color
-shell-integration-features = ssh-terminfo,ssh-env,no-cursor
+shell-integration-features = ssh-terminfo,ssh-env,no-cursor,no-title
 
 # Titlebar style (native, transparent, tabs, hidden)
 macos-titlebar-style = tabs
 
 # Cursor
 cursor-style = block
+
+# Rename tab
+keybind = super+shift+i=prompt_surface_title

@@ -19,6 +19,10 @@ plugins=(
 
 source $ZSH/oh-my-zsh.sh
 
+# Tab title: last 2 path components
+ZSH_THEME_TERM_TITLE_IDLE="%2~"
+ZSH_THEME_TERM_TAB_TITLE_IDLE="%2~"
+
 if [[ -n $SSH_CONNECTION ]]; then
   export EDITOR='vim'
 else
@@ -198,3 +202,4 @@ if [ -f "$HOME/.secrets.zsh" ]; then source "$HOME/.secrets.zsh"; fi
 # add unversioned python symlinks to PATH
 export PATH="$(brew --prefix python)/libexec/bin:$PATH"
 
+export PATH="/opt/homebrew/opt/openjdk@21/bin:$PATH"
