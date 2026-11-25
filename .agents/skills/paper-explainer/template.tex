@@ -1,0 +1,73 @@
+% Template for a printable A4 paper explainer (one sided, compact). Compile with tectonic (XeTeX, fontspec works).
+% Replace every <...> placeholder. Sections only: \chapter would force a page break.
+\documentclass[11pt,a4paper,oneside,open=any,titlepage=false,parskip=half]{scrreprt}
+\usepackage[a4paper,margin=2.2cm,top=2cm,bottom=2.4cm]{geometry}
+\usepackage[<english|ngerman>]{babel}
+\usepackage{fontspec}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,calc,decorations.pathreplacing}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage[hidelinks]{hyperref}
+\usepackage{eso-pic}
+% Punch mark on every page: short line at the left edge, vertically centred
+\AddToShipoutPictureFG{\put(\LenToUnit{3mm},\LenToUnit{0.5\paperheight}){\color{black!50}\rule{6mm}{0.4pt}}}
+
+\setkomafont{disposition}{\normalfont\bfseries}
+\RedeclareSectionCommand[beforeskip=1.5\baselineskip,afterskip=0.5\baselineskip]{section}
+\RedeclareSectionCommand[beforeskip=1\baselineskip,afterskip=0.4\baselineskip]{subsection}
+\renewcommand{\thesection}{\arabic{section}}
+\usepackage{scrlayer-scrpage}
+\clearpairofpagestyles
+\ihead{\headmark}\ohead{\pagemark}
+\automark[section]{section}
+
+\tcbset{
+  bsp/.style={enhanced,breakable,colback=blue!3,colframe=blue!50!black,
+    fonttitle=\bfseries,left=6pt,right=6pt,top=4pt,bottom=4pt},
+  merk/.style={enhanced,breakable,colback=green!4,colframe=green!40!black,
+    fonttitle=\bfseries,left=6pt,right=6pt},
+  fehler/.style={enhanced,breakable,colback=red!3,colframe=red!50!black,
+    fonttitle=\bfseries,left=6pt,right=6pt},
+  intu/.style={enhanced,breakable,colback=orange!4,colframe=orange!60!black,
+    fonttitle=\bfseries,left=6pt,right=6pt}
+}
+\newcounter{bsp}
+% Title convention: "<Name> (own toy example)"
+\newenvironment{example}[1]{\refstepcounter{bsp}\begin{tcolorbox}[bsp,title={Example \thebsp: #1}]}{\end{tcolorbox}}
+\newenvironment{takeaway}{\begin{tcolorbox}[merk,title={Takeaway}]}{\end{tcolorbox}}
+\newenvironment{pitfall}[1][Common misconception]{\begin{tcolorbox}[fehler,title={#1}]}{\end{tcolorbox}}
+% Title after the reader's home field, e.g. \begin{analogy}{ML analogy}
+\newenvironment{analogy}[1]{\begin{tcolorbox}[intu,title={#1}]}{\end{tcolorbox}}
+
+% Topic macros
+% \newcommand{\Foo}{\mathit{Foo}}
+
+% Keep title and author lines short: long lines here overflow the title block
+\title{<Short model or topic name>\\[0.3em]\Large <An intuition first guide to ...>}
+\subtitle{<Authors>: \emph{<Paper title>}, <Venue>, <Year>}
+\author{<Reader context, e.g. course or project>}
+\date{}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\bigskip
+
+\section{The paper in one page}
+
+\begin{takeaway}
+<One sentence summary>
+\end{takeaway}
+
+% ... sections per the Structure in SKILL.md ...
+
+\section{Summary}
+\begin{enumerate}[nosep]
+  \item <Point>
+\end{enumerate}
+
+\end{document}

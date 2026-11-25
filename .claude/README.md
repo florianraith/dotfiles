@@ -1,5 +1,7 @@
 # Claude Code setup
 
+Harness neutral preferences for other agents: `~/.agents/SETUP.md`.
+
 `settings.json` is not tracked. Add the following keys to `~/.claude/settings.json` by hand.
 
 ## Status line
